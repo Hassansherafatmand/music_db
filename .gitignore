@@ -1,0 +1,5 @@
+# macOS system file
+.DS_Store
+
+# Private notes for Claude (not part of the project)
+CLAUDE.md
