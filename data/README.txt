@@ -12,6 +12,10 @@ Row counts:
 - genre.csv: 15 genres
 - song.csv: 956 songs
 
+Stage 2 (listeners), import after the files above:
+5. listener.csv: 40 listeners (made-up usernames, emails at example.com)
+6. favorite.csv: 248 favorites (listener_id + song_id); 5 listeners have none
+
 Relationships:
 - artist 1 -> many album through album.artist_id
 - album 1 -> many song through song.album_id

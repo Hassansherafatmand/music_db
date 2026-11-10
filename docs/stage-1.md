@@ -45,16 +45,16 @@ erDiagram
 flowchart LR
     W["Listener website<br/>(imaginary)"] -- "search, browse" --> A["API server<br/>(imaginary)"]
     A -- "runs SELECT" --> DB[("MySQL<br/>music_db")]
-    I["Import script<br/>scripts/import_data.sql"] -- "loads CSV data" --> DB
+    I["Import script<br/>scripts/import_stage_1.sql"] -- "loads CSV data" --> DB
 ```
 
 ## Files in this stage
 
-| File | What it does |
-|---|---|
-| `migrations/001_create_artist.sql` | creates `artist` |
-| `migrations/002_create_album.sql` | creates `album` (FK → `artist`) |
-| `migrations/003_create_genre.sql` | creates `genre` (`genre_name` is unique) |
-| `migrations/004_create_song.sql` | creates `song` (FK → `album`, FK → `genre`) |
-| `scripts/import_data.sql` | loads `data/*.csv` into the 4 tables |
-| `scripts/build.sql` | builds everything from zero, in order |
+| File                               | What it does                                |
+| ---------------------------------- | ------------------------------------------- |
+| `migrations/001_create_artist.sql` | creates `artist`                            |
+| `migrations/002_create_album.sql`  | creates `album` (FK → `artist`)             |
+| `migrations/003_create_genre.sql`  | creates `genre` (`genre_name` is unique)    |
+| `migrations/004_create_song.sql`   | creates `song` (FK → `album`, FK → `genre`) |
+| `scripts/import_stage_1.sql`          | loads `data/*.csv` into the 4 tables        |
+| `scripts/build.sql`                | builds everything from zero, in order       |

@@ -23,14 +23,14 @@ From this folder, with MySQL 9:
 mysql --local-infile=1 --commands -u root -p < scripts/build.sql
 ```
 
-This deletes the old `music_db` database, runs every migration in order, and loads the
-practice data. If MySQL says "Loading local data is disabled", run
+This deletes the old `music_db` database, then builds it stage by stage: each stage's
+migrations, then that stage's practice data. If MySQL says "Loading local data is disabled", run
 `SET GLOBAL local_infile = 1;` once as root.
 
 ## Files
 
 - `docs/design.md`: the full design
-- `docs/stage-1.md`: the Stage 1 diagrams
+- `docs/stage-1.md`, `docs/stage-2.md`: the diagrams for each stage
 - `migrations/`: the migrations (small numbered SQL files)
-- `scripts/`: the import script and the build script
+- `scripts/`: one import script per stage, and the build script
 - `data/`: made-up practice data (CSV files), generated with AI

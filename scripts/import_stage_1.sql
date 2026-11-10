@@ -1,4 +1,4 @@
--- Import script (Stage 1): load the practice data from data/*.csv into the tables.
+-- Import script, Stage 1: load the music catalog from data/*.csv into the tables.
 --
 -- Order matters: parents first (artist, genre), then children (album, song).
 -- So every foreign key already has its parent row when the child row arrives.
