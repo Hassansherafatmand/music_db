@@ -15,11 +15,13 @@ touches the database is **real** and lives in this repo.
 
 | Part | From stage | Real or imaginary | What it does with the data |
 |---|---|---|---|
-| Listener website | 1 | imaginary | browse and search music; sign up; ♥ a song |
+| Listener website | 1 | imaginary | browse and search music; sign up; ♥ a song; make playlists; press Play |
 | API server | 1 | imaginary | gets requests from the website and the admin page, and runs the SQL |
 | MySQL database `music_db` | 1 | **real** | stores everything |
 | Import scripts | 1 | **real** | load the CSV files in `data/` into the tables (one script per stage) |
 | Admin page | 2 | imaginary | adds artists, albums and songs |
+| Nightly top-songs job | 3 | **real** (a SQL file, run by hand) | reads yesterday's plays and makes each listener's top songs |
+| Email service | 3 | outside service (imaginary) | sends each listener their top songs |
 
 - The API server sits between the website and the database. A browser must never talk
   to MySQL directly, because then everyone could see the database password.
@@ -38,12 +40,12 @@ files, run in order), and each finished stage gets a git tag.
 |---|---|---|---|
 | 1 | `artist`, `album`, `song`, `genre` | 4 | **built** (tag `stage-1`, see [stage-1.md](stage-1.md)) |
 | 2 | `listener`, `favorite` | 6 | **built** (tag `stage-2`, see [stage-2.md](stage-2.md)) |
-| 3 | playlists and plays | | planned |
+| 3 | `playlist`, `playlist_song`, `play` | 9 | **built** (tag `stage-3`, see [stage-3.md](stage-3.md)) |
 | 4 | more genres per song, and reviews | | planned |
 
 ---
 
-## 3. ER diagram (now: Stages 1 and 2)
+## 3. ER diagram (now: Stages 1 to 3)
 
 ```mermaid
 erDiagram
@@ -52,6 +54,11 @@ erDiagram
     GENRE ||--o{ SONG : "describes"
     LISTENER ||--o{ FAVORITE : "saves"
     SONG ||--o{ FAVORITE : "is saved in"
+    LISTENER ||--o{ PLAYLIST : "owns"
+    PLAYLIST ||--o{ PLAYLIST_SONG : "holds"
+    SONG ||--o{ PLAYLIST_SONG : "is in"
+    LISTENER ||--o{ PLAY : "presses Play"
+    SONG ||--o{ PLAY : "is played"
 
     ARTIST {
         int artist_id PK
@@ -88,6 +95,24 @@ erDiagram
         int listener_id PK, FK
         int song_id PK, FK
         date added_date
+    }
+    PLAYLIST {
+        int playlist_id PK
+        int listener_id FK
+        varchar playlist_name
+        date created_date
+    }
+    PLAYLIST_SONG {
+        int playlist_id PK, FK
+        int song_id PK, FK
+        int position
+        date added_date
+    }
+    PLAY {
+        int play_id PK
+        int listener_id FK
+        int song_id FK
+        datetime played_at
     }
 ```
 
@@ -157,6 +182,41 @@ Every `_id` primary key is `AUTO_INCREMENT`: a new row gets the next number by i
 | `song_id` | PK, FK → `song` | |
 | `added_date` | | the day they pressed ♥ (default: today) |
 
+### Stage 3: playlists and plays
+
+**`playlist`**: one row for each playlist.
+
+| Column | Key | Notes |
+|---|---|---|
+| `playlist_id` | PK | |
+| `listener_id` | FK → `listener` | required (the owner). Deleted together with the listener (`ON DELETE CASCADE`). |
+| `playlist_name` | | required |
+| `created_date` | | the day it was made (default: today) |
+
+Extra rule: `UNIQUE (listener_id, playlist_name)`. One listener cannot have two
+playlists with the same name. (Two different listeners can.)
+
+**`playlist_song`**: one row for "this song is in this playlist, at this place".
+
+| Column | Key | Notes |
+|---|---|---|
+| `playlist_id` | PK, FK → `playlist` | deleted together with the playlist (`ON DELETE CASCADE`) |
+| `song_id` | PK, FK → `song` | |
+| `position` | | the order: 1, 2, 3… (`CHECK (position >= 1)`) |
+| `added_date` | | the day the song was added (default: today) |
+
+Extra rule: `UNIQUE (playlist_id, position)`. Two songs cannot have the same place in
+one playlist.
+
+**`play`**: one row each time a listener presses Play.
+
+| Column | Key | Notes |
+|---|---|---|
+| `play_id` | PK | |
+| `listener_id` | FK → `listener` | required. Deleted together with the listener (`ON DELETE CASCADE`). |
+| `song_id` | FK → `song` | required |
+| `played_at` | | the date and time (default: now) |
+
 ---
 
 ## 5. Relationships
@@ -168,8 +228,17 @@ Every `_id` primary key is `AUTO_INCREMENT`: a new row gets the next number by i
 | `genre` 1 — 0..many `song` | One genre has zero or more songs. Each song has exactly one genre. |
 | `listener` 1 — 0..many `favorite` | One listener has zero or more favorites. Each favorite belongs to exactly one listener. |
 | `song` 1 — 0..many `favorite` | One song is loved zero or more times. Each favorite is for exactly one song. |
+| `listener` 1 — 0..many `playlist` | One listener has zero or more playlists. Each playlist has exactly one owner. |
+| `playlist` 1 — 0..many `playlist_song` | One playlist holds zero or more songs. |
+| `song` 1 — 0..many `playlist_song` | One song is in zero or more playlists. |
+| `listener` 1 — 0..many `play` | One listener has zero or more plays. Each play belongs to exactly one listener. |
+| `song` 1 — 0..many `play` | One song is played zero or more times. Each play is for exactly one song. |
 
-`listener` and `song` are **many-to-many**, through `favorite`.
+Many-to-many relationships:
+
+- `listener` and `song`, through `favorite` (loved once)
+- `playlist` and `song`, through `playlist_song`
+- `listener` and `song`, through `play` (played many times)
 
 A parent can have no children (some artists have no albums yet). But a child always
 needs its parent, because every foreign key is required (`NOT NULL`).
@@ -189,10 +258,23 @@ The database is in **3NF**. The important choices:
   the same song twice. Its only other column, `added_date`, depends on the whole key
   (2NF). A column like `username` would not belong here, because it depends only on
   `listener_id`.
-- **What happens on DELETE.** A favorite **belongs to** a listener, so when a listener
-  deletes their account, their favorites are deleted too (`ON DELETE CASCADE`). The
-  music is protected: a song that someone loves, or an artist who still has albums,
-  cannot be deleted.
+- **`favorite` and `play` look alike, but their keys are different.** You love a song
+  only once, so `favorite` uses the two-column key. You can play a song many times, so
+  `play` needs its own `play_id`.
+- **`playlist_song` is a junction table with extra data.** `position` (the order) and
+  `added_date` depend on the whole key: this song, in this playlist (2NF).
+- **`playlist` does not save its owner's `username`.** It would depend on
+  `listener_id`, which is not the key (3NF).
+- **`playlist` has no "number of songs" column.** We count the rows in
+  `playlist_song` instead. We don't save what we can calculate.
+- **`streams` is not a copy of `play`.** `song.streams` is the count from **other**
+  music services (from the CSV). `play` is the plays on **our** website. These are two
+  different facts.
+- **What happens on DELETE.** Favorites, playlists and plays **belong to** a listener,
+  so when a listener deletes their account, they are deleted too (`ON DELETE
+  CASCADE`). When a playlist is deleted, its `playlist_song` rows go with it. The music
+  is protected: a song that is loved, in a playlist or played, or an artist who still
+  has albums, cannot be deleted.
 - **`streams` is a `BIGINT`.** An `INT` stops at about 2.1 billion, and one song already
   has 1,847,621,533 streams. It counts streams on **other** music services.
 - **Constraints have names** (like `fk_song_genre`). Error messages show the name, and a
@@ -205,8 +287,9 @@ The database is in **3NF**. The important choices:
 | File | What it is |
 |---|---|
 | `docs/design.md` | this document |
-| `docs/stage-1.md`, `docs/stage-2.md` | the diagrams for each stage |
+| `docs/stage-1.md` … `stage-3.md` | the diagrams for each stage |
 | `migrations/` | the migrations: small numbered SQL files, run in order |
-| `scripts/import_stage_1.sql`, `import_stage_2.sql` | load each stage's CSV files |
+| `scripts/import_stage_1.sql` … `import_stage_3.sql` | load each stage's CSV files |
+| `scripts/nightly_top_songs.sql` | the nightly top-songs job (we run it by hand) |
 | `scripts/build.sql` | builds the whole database from zero, stage by stage |
 | `data/` | made-up practice data (CSV files), generated with AI |

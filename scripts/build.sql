@@ -29,3 +29,9 @@ SOURCE scripts/import_stage_1.sql;
 SOURCE migrations/005_create_listener.sql;
 SOURCE migrations/006_create_favorite.sql;
 SOURCE scripts/import_stage_2.sql;
+
+-- Stage 3: playlists and plays
+SOURCE migrations/007_create_playlist.sql;
+SOURCE migrations/008_create_playlist_song.sql;
+SOURCE migrations/009_create_play.sql;
+SOURCE scripts/import_stage_3.sql;

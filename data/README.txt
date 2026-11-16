@@ -16,10 +16,21 @@ Stage 2 (listeners), import after the files above:
 5. listener.csv: 40 listeners (made-up usernames, emails at example.com)
 6. favorite.csv: 248 favorites (listener_id + song_id); 5 listeners have none
 
+Stage 3 (playlists and plays), import after the files above:
+7. playlist.csv: 43 playlists; 20 listeners have none, 1 playlist is empty,
+   and 11 playlist names are used by more than one listener
+8. playlist_song.csv: 319 rows (playlist_id + song_id + position); 1 to 15 songs
+   per playlist
+9. play.csv: 2,456 plays from 2026-10-01 to 2026-11-09 (112 on 2026-11-09);
+   5 listeners have none, and the same listener can play a song many times
+
 Relationships:
 - artist 1 -> many album through album.artist_id
 - album 1 -> many song through song.album_id
 - genre 1 -> many song through song.genre_id
+- listener 1 -> many favorite, playlist and play through listener_id
+- playlist 1 -> many playlist_song through playlist_song.playlist_id
+- song 1 -> many favorite, playlist_song and play through song_id
 
 Practice design:
 - album rows are intentionally scattered; the same artist_id is not grouped together.

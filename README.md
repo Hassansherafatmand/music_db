@@ -30,7 +30,8 @@ migrations, then that stage's practice data. If MySQL says "Loading local data i
 ## Files
 
 - `docs/design.md`: the full design
-- `docs/stage-1.md`, `docs/stage-2.md`: the diagrams for each stage
+- `docs/stage-1.md` to `docs/stage-3.md`: the diagrams for each stage
 - `migrations/`: the migrations (small numbered SQL files)
-- `scripts/`: one import script per stage, and the build script
+- `scripts/`: one import script per stage, the build script, and the nightly
+  top-songs job
 - `data/`: made-up practice data (CSV files), generated with AI
