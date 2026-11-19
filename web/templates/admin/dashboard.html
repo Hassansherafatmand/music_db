@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+    <h1 style="margin-top:12px">The admin page</h1>
+    <p>Add music to the catalog. Every form runs an <code>INSERT</code>, and the database's keys and constraints check it.</p>
+  </div>
+  <form method="post" action="{{ url_for('admin.logout') }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button class="btn btn-ghost">{{ ui.icon("logout") }} Leave admin mode</button>
+  </form>
+</div>
+
+<div class="stats" style="margin:0 0 26px">
+  <div class="stat"><b class="gradient-text">{{ stats.artists }}</b><span>artists</span></div>
+  <div class="stat"><b class="gradient-text">{{ stats.albums }}</b><span>albums</span></div>
+  <div class="stat"><b class="gradient-text">{{ stats.songs|thousands }}</b><span>songs</span></div>
+  <div class="stat"><b class="gradient-text">{{ stats.listeners }}</b><span>listeners</span></div>
+  <div class="stat"><b class="gradient-text">{{ stats.plays|thousands }}</b><span>plays</span></div>
+</div>
+
+<div class="admin-grid">
+  <section class="card" id="add-artist">
+    <h2>Add an artist</h2>
+    <form class="form" method="post" action="{{ url_for('admin.add_artist') }}" style="margin-top:16px">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="artist_name">Name</label><input class="input" id="artist_name" name="artist_name" maxlength="100" required></div>
+      <div class="row">
+        <div class="field"><label for="origin_state">State <span class="faint">(optional)</span></label><input class="input" id="origin_state" name="origin_state" maxlength="2" placeholder="WA"></div>
+        <div class="field"><label for="debut_year">Debut year</label><input class="input" id="debut_year" name="debut_year" type="number" min="1900" max="{{ this_year + 1 }}" value="{{ this_year }}" required></div>
+      </div>
+      <button class="btn btn-primary">{{ ui.icon("plus") }} Add artist</button>
+    </form>
+  </section>
+
+  <section class="card" id="add-album">
+    <h2>Add an album</h2>
+    <form class="form" method="post" action="{{ url_for('admin.add_album') }}" style="margin-top:16px">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="album_name">Name</label><input class="input" id="album_name" name="album_name" maxlength="100" required></div>
+      <div class="row">
+        <div class="field">
+          <label for="artist_id">Artist</label>
+          <select class="select" id="artist_id" name="artist_id" required>
+            <option value="">Choose…</option>
+            {% for a in artists %}<option value="{{ a.artist_id }}">{{ a.artist_name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field"><label for="release_year">Release year</label><input class="input" id="release_year" name="release_year" type="number" min="1900" max="{{ this_year + 1 }}" value="{{ this_year }}" required></div>
+      </div>
+      <button class="btn btn-primary">{{ ui.icon("plus") }} Add album</button>
+    </form>
+  </section>
+
+  <section class="card wide" id="add-song">
+    <h2>Add a song</h2>
+    <p class="muted" style="margin:4px 0 0">The song and its genres are saved in one transaction: all together, or nothing.</p>
+    <form class="form" method="post" action="{{ url_for('admin.add_song') }}" style="margin-top:16px">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="row-3">
+        <div class="field"><label for="song_name">Name</label><input class="input" id="song_name" name="song_name" maxlength="100" required></div>
+        <div class="field"><label for="track_number">Track number</label><input class="input" id="track_number" name="track_number" type="number" min="1" value="1" required></div>
+        <div class="field"><label for="duration">Length</label><input class="input" id="duration" name="duration" placeholder="3:45" required></div>
+      </div>
+      <div class="field">
+        <label for="album_id">Album</label>
+        <select class="select" id="album_id" name="album_id" required>
+          <option value="">Choose…</option>
+          {% for a in albums %}<option value="{{ a.album_id }}">{{ a.artist_name }} · {{ a.album_name|or_untitled }} ({{ a.release_year }})</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <span class="label">Genres <span class="faint">(one or more)</span></span>
+        <div class="checks">
+          {% for gr in genres %}<label class="check"><input type="checkbox" name="genre_ids" value="{{ gr.genre_id }}"> {{ gr.genre_name }}</label>{% endfor %}
+        </div>
+      </div>
+      <button class="btn btn-primary">{{ ui.icon("plus") }} Add song</button>
+    </form>
+  </section>
+
+  <section class="card" id="set-genres">
+    <h2>Set a song's genres</h2>
+    <p class="muted" style="margin:4px 0 16px">Type the song number (you can see it in the table on the right).</p>
+    <form class="new-playlist" method="get" action="{{ url_for('admin.find_song') }}">
+      <label class="sr-only" for="song_id">Song number</label>
+      <input class="input" id="song_id" name="song_id" type="number" min="1" placeholder="Song number, like 1742" required>
+      <button class="btn btn-primary">Open</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Songs added last</h2>
+    <table class="table" style="margin-top:12px">
+      <thead><tr><th>#</th><th>Song</th><th>Album</th><th></th></tr></thead>
+      <tbody>
+        {% for s in newest %}
+          <tr>
+            <td class="faint">{{ s.song_id }}</td>
+            <td>{{ s.song_name|or_untitled }}</td>
+            <td><a href="{{ url_for('catalog.album', album_id=s.album_id) }}#song-{{ s.song_id }}">{{ s.album_name|or_untitled }}</a></td>
+            <td><a class="link" href="{{ url_for('admin.song_genres', song_id=s.song_id) }}">genres</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+
+{% endblock %}

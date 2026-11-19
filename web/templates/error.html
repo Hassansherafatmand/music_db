@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}{{ code }}{% endblock %}
+{% block content %}
+
+<div class="error-page">
+  <div class="vinyl" style="--h: 0" aria-hidden="true"></div>
+  <h1 class="gradient-text">{{ code }}</h1>
+  <h2>{{ title }}</h2>
+  <p>{{ text }}</p>
+  <a class="btn btn-primary" href="{{ url_for('catalog.home') }}">{{ ui.icon("home") }} Back to the home page</a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}My top songs{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">Your listening</span>
+    <h1>My top songs</h1>
+    <p>Everything here is counted from your rows in the <code>play</code> table, with <code>GROUP BY</code> and <code>COUNT</code>.</p>
+  </div>
+</div>
+
+{% if not stats.plays %}
+  {% call ui.empty("▶", "No plays yet", "Press ▶ next to any song. Every press saves a row in the play table, and your top songs show up here.") %}
+    <a class="btn btn-primary" href="{{ url_for('catalog.home') }}">Start listening</a>
+  {% endcall %}
+{% else %}
+
+<div class="stat-tiles">
+  <div class="stat-tile"><b>{{ stats.plays|thousands }}</b><span>plays</span></div>
+  <div class="stat-tile"><b>{{ (stats.seconds // 60)|thousands }}</b><span>minutes listened</span></div>
+  <div class="stat-tile"><b>{{ stats.different_songs|thousands }}</b><span>different songs</span></div>
+  <div class="stat-tile"><b style="font-size:1.35rem;line-height:2.1rem">{{ stats.first_play|nice_date }}</b><span>your first play</span></div>
+</div>
+
+<div class="split section">
+  <section>
+    <div class="section-head"><div><h2>Your top 10</h2><p>Your most played songs.</p></div></div>
+    {% set best = top[0].plays if top else 1 %}
+    <ol class="ranked card" style="padding:8px">
+      {% for s in top %}
+        <li>
+          <a href="{{ url_for('catalog.album', album_id=s.album_id) }}#song-{{ s.song_id }}">{{ ui.cover(s.album_id, s.album_name, "tiny") }}</a>
+          <div class="meta">
+            <b>{{ s.song_name|or_untitled }}</b>
+            <span><a href="{{ url_for('catalog.artist', artist_id=s.artist_id) }}">{{ s.artist_name }}</a> · {{ s.album_name|or_untitled }}</span>
+          </div>
+          <span class="track-plays">{{ s.plays }} ▶</span>
+          <span class="bar"><i style="width: {{ (s.plays / best * 100)|round(1) }}%"></i></span>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <div style="display:grid;gap:28px">
+    <section class="card">
+      <h3>When you listen</h3>
+      <p class="muted" style="margin:4px 0 0;font-size:.9rem">Plays on each day of the week (<code>DAYOFWEEK</code>).</p>
+      <div class="week">
+        {% for label, plays in weekdays %}
+          <div class="day">
+            <b>{{ plays }}</b>
+            <div class="col" style="height: {{ (plays / busiest * 100)|round(1) if busiest else 0 }}%"></div>
+            <small>{{ label }}</small>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Your genres</h3>
+      <p class="muted" style="margin:4px 0 14px;font-size:.9rem">A song with 2 genres counts for both.</p>
+      {% set most = genres[0].plays if genres else 1 %}
+      <div class="genre-bars">
+        {% for gr in genres %}
+          <div class="genre-bar">
+            <a href="{{ url_for('catalog.genre', genre_id=gr.genre_id) }}">{{ gr.genre_name }}</a>
+            <span class="track-bg"><i style="--h: {{ gr.genre_id|hue }}; width: {{ (gr.plays / most * 100)|round(1) }}%"></i></span>
+            <b>{{ gr.plays }}</b>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="split section">
+  <section class="mail-card">
+    <span class="stamp" aria-hidden="true">💌</span>
+    <span class="eyebrow">Your latest listening day</span>
+    <h2>{{ latest_day[0].day|nice_date if latest_day }}</h2>
+    <p class="muted" style="margin:8px 0 18px;max-width:520px">The nightly job (<code>scripts/nightly_top_songs.sql</code>) finds what each listener played on one day. Instead of a paid email service, the website shows it to you here.</p>
+    <ol class="timeline">
+      {% for s in latest_day[:6] %}
+        <li>
+          {{ ui.cover(s.album_id, s.song_name, "tiny") }}
+          <div style="min-width:0"><b>{{ s.song_name|or_untitled }}</b><span>{{ s.artist_name }}</span></div>
+          <small>{{ s.plays|plural("play") }}</small>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section>
+    <div class="section-head"><div><h2>Recently played</h2></div></div>
+    <ol class="timeline card" style="padding:8px">
+      {% for p in recent %}
+        <li>
+          <a href="{{ url_for('catalog.album', album_id=p.album_id) }}#song-{{ p.song_id }}">{{ ui.cover(p.album_id, p.album_name, "tiny") }}</a>
+          <div style="min-width:0"><b>{{ p.song_name|or_untitled }}</b><span>{{ p.artist_name }}</span></div>
+          <small>{{ p.played_at|nice_date }}<br>{{ "%02d:%02d"|format(p.played_at.hour, p.played_at.minute) }}</small>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+</div>
+
+{% endif %}
+{% endblock %}

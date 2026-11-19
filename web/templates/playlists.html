@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}My playlists{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">Your library</span>
+    <h1>My playlists</h1>
+    <p>Add songs with the <b>+</b> button next to any song. Inside a playlist you can move songs up and down: the order is saved in <code>playlist_song.position</code>.</p>
+  </div>
+  <form class="new-playlist" method="post" action="{{ url_for('library.create_playlist') }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <label class="sr-only" for="playlist_name">Playlist name</label>
+    <input class="input" id="playlist_name" name="playlist_name" maxlength="50" placeholder="New playlist name" required>
+    <button class="btn btn-primary">{{ ui.icon("plus") }} Create</button>
+  </form>
+</div>
+
+{% if playlists %}
+  <div class="grid grid-albums">
+    {% for p in playlists %}
+      <a class="playlist-card" href="{{ url_for('library.playlist', playlist_id=p.playlist_id) }}">
+        {{ ui.mosaic(p.covers) }}
+        <h3>{{ p.playlist_name }}</h3>
+        <p>{{ p.songs|plural("song") }}{% if p.songs %} · {{ p.seconds|total_time }}{% endif %}</p>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  {% call ui.empty("🎧", "No playlists yet", "Give your first playlist a name above, then add songs from any album.") %}{% endcall %}
+{% endif %}
+
+{% endblock %}

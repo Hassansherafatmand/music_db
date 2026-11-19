@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Genres{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">Explore</span>
+    <h1>Genres</h1>
+    <p>Since Stage 4, a song can have more than one genre: each song-and-genre pair is one row in the junction table <code>song_genre</code>.</p>
+  </div>
+</div>
+
+<div class="genre-grid">
+  {% for gr in genres %}
+    <a class="genre-tile {{ 'empty' if not gr.songs }}" style="--h: {{ gr.genre_id|hue }}" href="{{ url_for('catalog.genre', genre_id=gr.genre_id) }}">
+      <h3>{{ gr.genre_name }}</h3>
+      <p>{{ gr.songs|plural("song") }}</p>
+    </a>
+  {% endfor %}
+</div>
+
+{% endblock %}

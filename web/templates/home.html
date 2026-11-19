@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block content %}
+
+<section class="hero">
+  <div>
+    <span class="eyebrow">{{ stats.songs|thousands }} songs · {{ stats.artists }} artists · {{ stats.albums }} albums</span>
+    <h1>Find your next<br><span class="gradient-text">favorite song.</span></h1>
+    <p class="lead">Browse artists and albums, ♥ the songs you love, build playlists in your own order, and tell everyone what you think of an album.</p>
+    <form class="hero-search" action="{{ url_for('catalog.search') }}" role="search">
+      {{ ui.icon("search") }}
+      <label class="sr-only" for="hero-q">Search</label>
+      <input id="hero-q" name="q" type="search" placeholder="Try “rain”, “golden” or an artist…">
+      <button class="btn btn-primary">Search</button>
+    </form>
+    <div class="hero-actions">
+      <a class="btn btn-ghost" href="{{ url_for('catalog.artists') }}">{{ ui.icon("mic") }} Browse artists</a>
+      {% if current_user %}
+        <a class="btn btn-ghost" href="{{ url_for('library.top_songs') }}">{{ ui.icon("chart") }} My top songs</a>
+      {% else %}
+        <a class="btn btn-ghost" href="{{ url_for('account.signup') }}">{{ ui.icon("user") }} Create a free account</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="turntable" aria-hidden="true">
+    <div class="vinyl" style="--h: 335"></div>
+    <div class="tonearm"><i></i></div>
+    <span class="floating-note">♪</span><span class="floating-note">♫</span><span class="floating-note">♪</span>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat"><b class="gradient-text">{{ stats.artists|thousands }}</b><span>artists</span></div>
+  <div class="stat"><b class="gradient-text">{{ stats.albums|thousands }}</b><span>albums</span></div>
+  <div class="stat"><b class="gradient-text">{{ stats.songs|thousands }}</b><span>songs</span></div>
+  <div class="stat"><b class="gradient-text">{{ stats.listeners|thousands }}</b><span>listeners</span></div>
+  <div class="stat"><b class="gradient-text">{{ stats.plays|thousands }}</b><span>plays on music_db</span></div>
+</div>
+
+<div class="split section">
+  <section>
+    <div class="section-head">
+      <div><h2>Most played on music_db</h2><p>Counted from every ▶ press in the <code>play</code> table.</p></div>
+    </div>
+    {% set top_plays = most_played[0].plays if most_played else 1 %}
+    <ol class="ranked card" style="padding:8px">
+      {% for s in most_played %}
+        <li>
+          <a href="{{ url_for('catalog.album', album_id=s.album_id) }}#song-{{ s.song_id }}">{{ ui.cover(s.album_id, s.album_name, "tiny") }}</a>
+          <div class="meta">
+            <b>{{ s.song_name|or_untitled }}</b>
+            <span><a href="{{ url_for('catalog.artist', artist_id=s.artist_id) }}">{{ s.artist_name }}</a> · {{ s.album_name|or_untitled }}</span>
+          </div>
+          <span class="track-plays">{{ s.plays }} ▶</span>
+          <span class="bar"><i style="width: {{ (s.plays / top_plays * 100)|round(1) }}%"></i></span>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div><h2>Top rated albums</h2><p>The best average stars (2+ reviews).</p></div>
+    </div>
+    <div class="card" style="padding:8px">
+      <ol class="ranked">
+        {% for a in top_rated %}
+          <li>
+            <a href="{{ url_for('catalog.album', album_id=a.album_id) }}">{{ ui.cover(a.album_id, a.album_name, "tiny") }}</a>
+            <div class="meta">
+              <b><a href="{{ url_for('catalog.album', album_id=a.album_id) }}">{{ a.album_name|or_untitled }}</a></b>
+              <span>{{ a.artist_name }} · {{ a.reviews|plural("review") }}</span>
+            </div>
+            <span class="nowrap">{{ ui.stars(a.avg_stars) }} <b>{{ a.avg_stars }}</b></span>
+          </li>
+        {% endfor %}
+      </ol>
+    </div>
+  </section>
+</div>
+
+<section class="section">
+  <div class="section-head">
+    <div><h2>Fresh releases</h2><p>The newest albums in the catalog.</p></div>
+    <a class="btn btn-soft btn-sm" href="{{ url_for('catalog.artists') }}">All artists {{ ui.icon("arrow") }}</a>
+  </div>
+  <div class="grid grid-albums">
+    {% for a in newest %}
+      <a class="album-card" href="{{ url_for('catalog.album', album_id=a.album_id) }}">
+        {{ ui.cover(a.album_id, a.album_name) }}
+        <h3>{{ a.album_name|or_untitled }}</h3>
+        <p>{{ a.artist_name }} · {{ a.release_year }}</p>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <div><h2>Explore by genre</h2><p>One song can have more than one genre (the <code>song_genre</code> table).</p></div>
+  </div>
+  <div class="chips">
+    {% for gr in genres %}
+      <a class="chip chip-lg" style="--h: {{ gr.genre_id|hue }}" href="{{ url_for('catalog.genre', genre_id=gr.genre_id) }}">{{ gr.genre_name }} <small>{{ gr.songs }}</small></a>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

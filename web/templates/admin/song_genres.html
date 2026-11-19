@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Genres of a song{% endblock %}
+{% block content %}
+
+<div class="card" style="max-width:760px;margin:0 auto;padding:30px">
+  <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+  <div style="display:flex;gap:18px;align-items:center;margin:18px 0 6px">
+    <div style="width:84px">{{ ui.cover(song.album_id, song.album_name) }}</div>
+    <div>
+      <h1 style="font-size:1.8rem">{{ song.song_name|or_untitled }}</h1>
+      <p class="muted" style="margin:6px 0 0">Song #{{ song.song_id }} · track {{ song.track_number }} on <a class="link" href="{{ url_for('catalog.album', album_id=song.album_id) }}">{{ song.album_name|or_untitled }}</a> by {{ song.artist_name }}</p>
+    </div>
+  </div>
+  <p class="muted">Each checked genre is one row in <code>song_genre</code>. Saving removes the old rows and adds the new ones, in one transaction.</p>
+
+  <form class="form" method="post" style="margin-top:18px">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="checks">
+      {% for gr in genres %}
+        <label class="check"><input type="checkbox" name="genre_ids" value="{{ gr.genre_id }}" {{ "checked" if gr.genre_id in current }}> {{ gr.genre_name }}</label>
+      {% endfor %}
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary">Save genres</button>
+      <a class="btn btn-ghost" href="{{ url_for('admin.dashboard') }}">Back</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

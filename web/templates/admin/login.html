@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+
+<div class="card" style="max-width:460px;margin:30px auto;padding:34px">
+  <span class="badge-admin">{{ ui.icon("shield") }} Admin</span>
+  <h1 style="font-size:2rem;margin:14px 0 6px">The admin page</h1>
+  <p class="muted" style="margin:0 0 22px">The person who runs the website adds artists, albums and songs here, and sets a song's genres.</p>
+  {% if disabled %}
+    <div class="hint"><span>🔒</span><div>The admin page is off, because <code>ADMIN_PASSWORD</code> is empty in the <code>.env</code> file. Set it and start the website again.</div></div>
+  {% else %}
+    <form class="form" method="post">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      {% if error %}<div class="toast error" style="animation:none">{{ error }}</div>{% endif %}
+      <div class="field">
+        <label for="password">Admin password</label>
+        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required autofocus>
+        <small>It is <code>ADMIN_PASSWORD</code> in your private <code>.env</code> file.</small>
+      </div>
+      <button class="btn btn-primary btn-lg">Open the admin page</button>
+    </form>
+  {% endif %}
+</div>
+
+{% endblock %}

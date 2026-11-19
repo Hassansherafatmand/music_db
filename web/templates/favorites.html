@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}My favorites{% endblock %}
+{% block content %}
+
+<section class="banner" style="--h: 330; grid-template-columns: 200px minmax(0,1fr)">
+  <div class="liked-art">{{ ui.icon("heart") }}</div>
+  <div>
+    <span class="eyebrow">Your library</span>
+    <h1>My favorites</h1>
+    <div class="meta-line">
+      <b>{{ current_user.username }}</b><span class="dot"></span><span>{{ songs|length|plural("song") }}</span>
+      {% if songs %}<span class="dot"></span><span>{{ songs|sum(attribute="duration_seconds")|total_time }}</span>{% endif %}
+    </div>
+  </div>
+</section>
+
+{% if songs %}
+  {{ ui.tracks_head("") }}
+  <ol class="tracks">
+    {% for s in songs %}{{ ui.song_row(s) }}{% endfor %}
+  </ol>
+{% else %}
+  {% call ui.empty("♥", "No favorites yet", "Press the ♥ next to any song, and it shows up here.") %}
+    <a class="btn btn-primary" href="{{ url_for('catalog.artists') }}">Find some music</a>
+  {% endcall %}
+{% endif %}
+
+{% endblock %}

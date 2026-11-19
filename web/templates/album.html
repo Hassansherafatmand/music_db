@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}{{ album.album_name|or_untitled }} · {{ album.artist_name }}{% endblock %}
+{% block content %}
+
+{% set total = tracks|sum(attribute="duration_seconds") %}
+<section class="banner album" style="--h: {{ album.album_id|hue }}">
+  <div class="album-art">
+    <div class="vinyl" style="--h: {{ album.album_id|hue }}" aria-hidden="true"></div>
+    {{ ui.cover(album.album_id, album.album_name) }}
+  </div>
+  <div>
+    <span class="eyebrow">Album · {{ album.release_year }}</span>
+    <h1>{{ album.album_name|or_untitled }}</h1>
+    <div class="meta-line">
+      <a href="{{ url_for('catalog.artist', artist_id=album.artist_id) }}"><b>{{ album.artist_name }}</b></a>
+      <span class="dot"></span><span>{{ tracks|length|plural("song") }}</span>
+      {% if tracks %}<span class="dot"></span><span>{{ total|total_time }}</span>{% endif %}
+      {% if album.reviews %}
+        <span class="dot"></span>
+        <a href="#reviews" class="nowrap">{{ ui.stars(album.avg_stars) }} <b>{{ album.avg_stars }}</b> ({{ album.reviews|plural("review") }})</a>
+      {% endif %}
+    </div>
+    <div class="banner-actions">
+      {% if tracks %}
+        <form class="inline" method="post" action="{{ url_for('library.play', song_id=tracks[0].song_id) }}">
+          {{ ui.form_hidden("song-" ~ tracks[0].song_id) }}
+          <button class="btn btn-primary">{{ ui.icon("play") }} Play track 1</button>
+        </form>
+      {% endif %}
+      <a class="btn btn-ghost" href="#reviews">{{ ui.icon("star") }} {{ "Change my review" if my_review else "Write a review" }}</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  {% if tracks %}
+    {{ ui.tracks_head() }}
+    <ol class="tracks">
+      {% for s in tracks %}{{ ui.song_row(s, num=s.track_number, show_album=false) }}{% endfor %}
+    </ol>
+  {% else %}
+    {% call ui.empty("💿", "No songs on this album yet", "Some albums in the practice data have no songs, on purpose.") %}{% endcall %}
+  {% endif %}
+</section>
+
+<section class="section" id="reviews">
+  <div class="section-head"><div><h2>Reviews</h2><p>One review per listener per album, 1 to 5 stars (a <code>CHECK</code> in the database).</p></div></div>
+
+  <div class="split">
+    <div class="review-list">
+      {% for r in reviews %}
+        <article class="review {{ 'mine' if current_user and r.listener_id == current_user.id }}">
+          <span class="avatar-sm">{{ r.username[:2]|upper }}</span>
+          <div>
+            <header>
+              <b>{{ r.username }}</b>{% if current_user and r.listener_id == current_user.id %}<span class="pill">you</span>{% endif %}
+              {{ ui.stars(r.stars) }}
+              <small>{{ r.review_date|nice_date }}</small>
+            </header>
+            {% if r.review_text %}<p>{{ r.review_text }}</p>{% else %}<p class="no-text">Stars only, no words.</p>{% endif %}
+          </div>
+        </article>
+      {% else %}
+        {% call ui.empty("⭐", "No reviews yet", "Be the first to tell everyone what you think of this album.") %}{% endcall %}
+      {% endfor %}
+    </div>
+
+    <div style="display:grid;gap:20px">
+      {% if album.reviews %}
+        <div class="card review-summary">
+          <div class="review-score"><b>{{ album.avg_stars }}</b>{{ ui.stars(album.avg_stars) }}<div class="muted" style="font-size:.85rem;margin-top:4px">{{ album.reviews|plural("review") }}</div></div>
+          <div class="star-bars">
+            {% for stars, count in star_bars %}
+              <div class="star-bar"><span>{{ stars }} ★</span><span class="track-bg"><i style="width: {{ (count / most_stars * 100)|round(1) if most_stars else 0 }}%"></i></span><span>{{ count }}</span></div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="card">
+        {% if current_user %}
+          <h3>{{ "Your review" if my_review else "Write a review" }}</h3>
+          <form class="form" method="post" action="{{ url_for('reviews.save', album_id=album.album_id) }}" style="margin-top:14px">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <div class="field">
+              <span class="label">Your stars</span>
+              <div class="star-input">
+                {% for n in [5, 4, 3, 2, 1] %}
+                  <input type="radio" id="star{{ n }}" name="stars" value="{{ n }}" {{ "checked" if my_review and my_review.stars == n }} required>
+                  <label for="star{{ n }}" title="{{ n }} star{{ 's' if n > 1 }}">★</label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="field">
+              <label for="review_text">Your words <span class="faint">(optional)</span></label>
+              <textarea class="textarea" id="review_text" name="review_text" maxlength="500" placeholder="What do you like about this album?">{{ my_review.review_text if my_review and my_review.review_text }}</textarea>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary">{{ "Save changes" if my_review else "Post review" }}</button>
+            </div>
+          </form>
+          {% if my_review %}
+            <form method="post" action="{{ url_for('reviews.delete', album_id=album.album_id) }}" style="margin-top:10px" onsubmit="return confirm('Delete your review?')">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <button class="btn btn-danger btn-sm">{{ ui.icon("trash") }} Delete my review</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <h3>Want to review this album?</h3>
+          <p class="muted">Log in, choose 1 to 5 stars, and add a few words if you like.</p>
+          <a class="btn btn-primary" href="{{ url_for('account.login', next=here() ~ '#reviews') }}">Log in to review</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

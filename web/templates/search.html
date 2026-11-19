@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}{{ "Search: " ~ words if words else "Search" }}{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">Search</span>
+    {% if results is none %}
+      <h1>What do you want to hear?</h1>
+      <p>Type at least 2 letters. We look in song, artist and album names (SQL <code>LIKE '%words%'</code>).</p>
+    {% else %}
+      <h1>“{{ words }}”</h1>
+      <p>{{ results.songs|length|plural("song") }}, {{ results.artists|length|plural("artist") }}, {{ results.albums|length|plural("album") }}.</p>
+    {% endif %}
+  </div>
+</div>
+
+<form class="hero-search" action="{{ url_for('catalog.search') }}" role="search" style="margin-bottom:34px">
+  {{ ui.icon("search") }}
+  <label class="sr-only" for="page-q">Search</label>
+  <input id="page-q" name="q" type="search" value="{{ words }}" placeholder="Song, artist or album" autofocus>
+  <button class="btn btn-primary">Search</button>
+</form>
+
+{% if results is not none %}
+  {% if not results.songs and not results.artists and not results.albums %}
+    {% call ui.empty("🔍", "Nothing found", "Try fewer letters, or another word.") %}{% endcall %}
+  {% endif %}
+
+  {% if results.artists %}
+    <section>
+      <div class="section-head"><div><h2>Artists</h2></div></div>
+      <div class="grid grid-artists">
+        {% for a in results.artists %}
+          <a class="artist-card" href="{{ url_for('catalog.artist', artist_id=a.artist_id) }}">
+            {{ ui.avatar(a.artist_id, a.artist_name) }}
+            <div><h3>{{ a.artist_name }}</h3><p>{{ a.origin_state or "—" }} · since {{ a.debut_year }}</p></div>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if results.albums %}
+    <section class="section">
+      <div class="section-head"><div><h2>Albums</h2></div></div>
+      <div class="grid grid-albums">
+        {% for a in results.albums %}
+          <a class="album-card" href="{{ url_for('catalog.album', album_id=a.album_id) }}">
+            {{ ui.cover(a.album_id, a.album_name) }}
+            <h3>{{ a.album_name|or_untitled }}</h3>
+            <p>{{ a.artist_name }} · {{ a.release_year }}</p>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+  {% if results.songs %}
+    <section class="section">
+      <div class="section-head"><div><h2>Songs</h2><p>Most streamed first{{ " (the first 50)" if results.songs|length == 50 }}.</p></div></div>
+      {{ ui.tracks_head("") }}
+      <ol class="tracks">
+        {% for s in results.songs %}{{ ui.song_row(s) }}{% endfor %}
+      </ol>
+    </section>
+  {% endif %}
+{% endif %}
+
+{% endblock %}

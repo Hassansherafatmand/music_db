@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}{{ playlist.playlist_name }}{% endblock %}
+{% block content %}
+
+<section class="banner" style="--h: {{ (covers[0] if covers else 270)|hue }}; grid-template-columns: 220px minmax(0,1fr)">
+  {{ ui.mosaic(covers) }}
+  <div>
+    <span class="eyebrow">Playlist</span>
+    <h1>{{ playlist.playlist_name }}</h1>
+    <div class="meta-line">
+      <b>{{ current_user.username }}</b><span class="dot"></span>
+      <span>{{ tracks|length|plural("song") }}</span>
+      {% if tracks %}<span class="dot"></span><span>{{ seconds|total_time }}</span>{% endif %}
+      <span class="dot"></span><span>made {{ playlist.created_date|nice_date }}</span>
+    </div>
+    <div class="banner-actions">
+      {% if tracks %}
+        <form class="inline" method="post" action="{{ url_for('library.play', song_id=tracks[0].song_id) }}">
+          {{ ui.form_hidden("song-" ~ tracks[0].song_id) }}
+          <button class="btn btn-primary">{{ ui.icon("play") }} Play</button>
+        </form>
+      {% endif %}
+      <details class="pop">
+        <summary class="btn btn-ghost">{{ ui.icon("edit") }} Rename</summary>
+        <div class="pop-menu" style="left:0;right:auto;min-width:300px">
+          <p>New name</p>
+          <form class="form" method="post" action="{{ url_for('library.rename_playlist', playlist_id=playlist.playlist_id) }}" style="padding:0 6px 6px">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <input class="input" name="playlist_name" value="{{ playlist.playlist_name }}" maxlength="50" required aria-label="New name">
+            <button class="btn btn-primary btn-sm">Save</button>
+          </form>
+        </div>
+      </details>
+      <form class="inline" method="post" action="{{ url_for('library.delete_playlist', playlist_id=playlist.playlist_id) }}" onsubmit="return confirm('Delete this playlist? The songs stay in the catalog.')">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="btn btn-danger">{{ ui.icon("trash") }} Delete</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% if tracks %}
+  {{ ui.tracks_head("#") }}
+  <ol class="tracks">
+    {% for s in tracks %}{{ ui.song_row(s, num=s.position, playlist=playlist, first=loop.first, last=loop.last) }}{% endfor %}
+  </ol>
+{% else %}
+  {% call ui.empty("🎶", "This playlist is empty", "Open any album and press the + next to a song to add it here.") %}
+    <a class="btn btn-primary" href="{{ url_for('catalog.artists') }}">Browse artists</a>
+  {% endcall %}
+{% endif %}
+
+{% endblock %}

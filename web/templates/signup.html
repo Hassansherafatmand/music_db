@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Sign up{% endblock %}
+{% block content %}
+
+<div class="auth">
+  <div class="auth-art">
+    <div>
+      <h2>Your music,<br>your way.</h2>
+      <p>One free account. A new row in the <code>listener</code> table, and your password is saved only as a scrambled hash.</p>
+    </div>
+    <ul>
+      <li><span>♥</span> Save your favorite songs</li>
+      <li><span>▶</span> See your most played songs</li>
+      <li><span>★</span> Tell everyone what you think</li>
+    </ul>
+    <div class="vinyl" style="--h: 20" aria-hidden="true"></div>
+  </div>
+
+  <div class="auth-form">
+    <h1>Create an account</h1>
+    <p>Already have one? <a class="link" href="{{ url_for('account.login', next=request.args.get('next')) }}">Log in</a>.</p>
+
+    <form class="form" method="post" novalidate>
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="username">Username</label>
+        <input class="input {{ 'invalid' if errors.username }}" id="username" name="username" value="{{ form.username }}" autocomplete="username" maxlength="30" required autofocus>
+        {% if errors.username %}<span class="error">{{ errors.username }}</span>{% else %}<small>3 to 30 letters, numbers or _</small>{% endif %}
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input class="input {{ 'invalid' if errors.email }}" id="email" name="email" type="email" value="{{ form.email }}" autocomplete="email" maxlength="100" required>
+        {% if errors.email %}<span class="error">{{ errors.email }}</span>{% endif %}
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="password">Password</label>
+          <input class="input {{ 'invalid' if errors.password }}" id="password" name="password" type="password" autocomplete="new-password" required>
+          {% if errors.password %}<span class="error">{{ errors.password }}</span>{% else %}<small>At least 8 characters</small>{% endif %}
+        </div>
+        <div class="field">
+          <label for="password2">Password again</label>
+          <input class="input {{ 'invalid' if errors.password2 }}" id="password2" name="password2" type="password" autocomplete="new-password" required>
+          {% if errors.password2 %}<span class="error">{{ errors.password2 }}</span>{% endif %}
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg">Create my account</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

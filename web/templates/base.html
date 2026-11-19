@@ -1,0 +1,120 @@
+{% import "macros.html" as ui with context %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% endblock %}{{ " · " if self.title() }}music_db</title>
+  <meta name="description" content="A small music website: browse artists, albums and songs, love songs, make playlists and review albums.">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{{ 'has-player' if now_playing }}">
+<a class="skip" href="#main">Skip to the content</a>
+
+{% set endpoint = request.endpoint or "" %}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="{{ url_for('catalog.home') }}">{{ ui.disc() }}<span>music<b class="gradient-text">_db</b></span></a>
+
+    <nav class="mainnav" aria-label="Main">
+      <a href="{{ url_for('catalog.home') }}" class="{{ 'active' if endpoint == 'catalog.home' }}">Home</a>
+      <a href="{{ url_for('catalog.artists') }}" class="{{ 'active' if endpoint in ('catalog.artists', 'catalog.artist', 'catalog.album') }}">Artists</a>
+      <a href="{{ url_for('catalog.genres') }}" class="{{ 'active' if endpoint in ('catalog.genres', 'catalog.genre') }}">Genres</a>
+    </nav>
+
+    <form class="searchbox" action="{{ url_for('catalog.search') }}" role="search">
+      {{ ui.icon("search") }}
+      <label class="sr-only" for="top-search">Search</label>
+      <input id="top-search" name="q" type="search" placeholder="Search songs, artists, albums"
+             value="{{ request.args.get('q', '') if endpoint == 'catalog.search' }}">
+    </form>
+
+    <div class="usernav">
+      {% if current_user %}
+        <a href="{{ url_for('library.favorites') }}" class="{{ 'active' if endpoint == 'library.favorites' }}" title="My favorites">{{ ui.icon("heart") }}<span>Favorites</span></a>
+        <a href="{{ url_for('library.playlists') }}" class="{{ 'active' if endpoint in ('library.playlists', 'library.playlist') }}" title="My playlists">{{ ui.icon("list") }}<span>Playlists</span></a>
+        <a href="{{ url_for('library.top_songs') }}" class="{{ 'active' if endpoint == 'library.top_songs' }}" title="My top songs">{{ ui.icon("chart") }}<span>Top songs</span></a>
+        <details class="usermenu">
+          <summary title="{{ current_user.username }}"><span class="avatar-sm">{{ current_user.username[:2]|upper }}</span><span class="sr-only">Account menu</span></summary>
+          <div class="pop-menu">
+            <p>Logged in as</p>
+            <a href="{{ url_for('library.top_songs') }}">{{ ui.icon("user") }} {{ current_user.username }}</a>
+            <div class="divider"></div>
+            <form method="post" action="{{ url_for('account.logout') }}">
+              <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+              <button>{{ ui.icon("logout") }} Log out</button>
+            </form>
+          </div>
+        </details>
+      {% else %}
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('account.login', next=here()) }}">Log in</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('account.signup') }}">Sign up</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="toasts" role="status" aria-live="polite">
+      {% for category, message in messages %}
+        <div class="toast {{ category }}"><span>{{ message }}</span><button type="button" aria-label="Close">×</button></div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main id="main" class="page">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <span class="brand">{{ ui.disc() }}<span>music<b class="gradient-text">_db</b></span></span>
+      <span>A CS330 Databases final project · MySQL + Python + Flask · made-up practice data</span>
+      {% if is_admin %}
+        <span><a href="{{ url_for('admin.dashboard') }}">{{ ui.icon("shield") }} Admin page</a></span>
+      {% else %}
+        <a href="{{ url_for('admin.dashboard') }}">{{ ui.icon("shield") }} Admin</a>
+      {% endif %}
+    </div>
+
+    {% set log = g.get("sql_log", []) %}
+    <details class="xray">
+      <summary>{{ ui.icon("database") }} Under the hood: the SQL behind this page
+        <span class="count">{{ log|length }} {{ "query" if log|length == 1 else "queries" }} · {{ "%.1f"|format(log|sum(attribute="ms")) }} ms</span></summary>
+      <p class="xray-intro">Every page on this website is built from SQL in <code>web/sql/</code>. These are the statements this page just ran, in order. <code>%(name)s</code> is a parameter: its value is sent separately, so nobody can change the SQL.</p>
+      <ol>
+        {% for q in log %}
+          <li>
+            <div class="xray-head"><code>{{ q.name }}</code><span>{{ q.about }}</span><small>{{ q.rows }} row{{ "" if q.rows == 1 else "s" }}{{ "" if q.fetch else " changed" }} · {{ "%.1f"|format(q.ms) }} ms</small></div>
+            <pre>{{ q.sql }}</pre>
+          </li>
+        {% endfor %}
+      </ol>
+    </details>
+  </div>
+</footer>
+
+{% if now_playing %}
+  <div class="player" role="region" aria-label="Now playing">
+    <div class="player-song">
+      <a href="{{ url_for('catalog.album', album_id=now_playing.album_id) }}#song-{{ now_playing.song_id }}">{{ ui.cover(now_playing.album_id, now_playing.album_name, "tiny") }}</a>
+      <div style="min-width:0">
+        <b>{{ now_playing.song_name|or_untitled }}</b>
+        <span><a href="{{ url_for('catalog.artist', artist_id=now_playing.artist_id) }}">{{ now_playing.artist_name }}</a> · {{ now_playing.album_name|or_untitled }}</span>
+      </div>
+    </div>
+    <div class="player-middle">
+      <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="progress"><span>0:00</span><div class="line"><i style="animation-duration: {{ now_playing.duration_seconds or 180 }}s"></i></div><span>{{ now_playing.duration_seconds|duration }}</span></div>
+    </div>
+    <div class="player-note">No sound on this website: pressing ▶ saved one new row in the <code>play</code> table.</div>
+  </div>
+{% endif %}
+
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</body>
+</html>

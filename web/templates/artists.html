@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Artists{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">The catalog</span>
+    <h1>Artists</h1>
+    <p>{{ artists|length }} artists. Each card counts the artist's albums and the streams of all their songs (on other music services).</p>
+  </div>
+</div>
+
+<div class="grid grid-artists">
+  {% for a in artists %}
+    <a class="artist-card" href="{{ url_for('catalog.artist', artist_id=a.artist_id) }}">
+      {{ ui.avatar(a.artist_id, a.artist_name) }}
+      <div>
+        <h3>{{ a.artist_name }}</h3>
+        <p>{{ a.origin_state or "—" }} · since {{ a.debut_year }}</p>
+      </div>
+      <div class="pill-row">
+        <span class="pill">{{ ui.icon("disc") }} {{ a.albums|plural("album") }}</span>
+        {% if a.streams %}<span class="pill">{{ a.streams|compact }} streams</span>{% endif %}
+      </div>
+    </a>
+  {% endfor %}
+</div>
+
+{% endblock %}

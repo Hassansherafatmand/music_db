@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}{{ genre.genre_name }}{% endblock %}
+{% block content %}
+
+<section class="banner" style="--h: {{ genre.genre_id|hue }}; grid-template-columns: 160px minmax(0,1fr)">
+  <div class="genre-tile" style="--h: {{ genre.genre_id|hue }}; min-height:160px; aspect-ratio:1"><h3>{{ genre.genre_name[:2] }}</h3><p>{{ ui.icon("tag") }}</p></div>
+  <div>
+    <span class="eyebrow">Genre</span>
+    <h1>{{ genre.genre_name }}</h1>
+    <div class="meta-line"><span><b>{{ songs|length }}</b> song{{ "" if songs|length == 1 else "s" }}{{ " (the top 100 by streams)" if songs|length == 100 }}</span></div>
+  </div>
+</section>
+
+{% if songs %}
+  {{ ui.tracks_head("") }}
+  <ol class="tracks">
+    {% for s in songs %}{{ ui.song_row(s) }}{% endfor %}
+  </ol>
+{% else %}
+  {% call ui.empty("🏷️", "No songs in this genre", "No song has this genre yet. That's on purpose in the practice data, for LEFT JOIN practice.") %}{% endcall %}
+{% endif %}
+
+{% endblock %}

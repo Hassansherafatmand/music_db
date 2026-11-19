@@ -6,3 +6,11 @@ CLAUDE.md
 
 # Private decision log (my study notes, not public)
 docs/decisions.md
+
+# The website's private settings and passwords (copy .env.example to .env)
+.env
+
+# Python: the private package folder and cache files
+.venv/
+__pycache__/
+*.pyc

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+
+<div class="auth">
+  <div class="auth-art">
+    <div>
+      <h2>Welcome back.</h2>
+      <p>Your favorites, your playlists and your top songs are waiting.</p>
+    </div>
+    <ul>
+      <li><span>♥</span> Love the songs you like</li>
+      <li><span>☰</span> Build playlists in your own order</li>
+      <li><span>★</span> Review albums with 1 to 5 stars</li>
+    </ul>
+    <div class="vinyl" style="--h: 260" aria-hidden="true"></div>
+  </div>
+
+  <div class="auth-form">
+    <h1>Log in</h1>
+    <p>New here? <a class="link" href="{{ url_for('account.signup', next=request.args.get('next')) }}">Create an account</a>.</p>
+
+    <form class="form" method="post">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      {% if error %}<div class="toast error" style="animation:none">{{ error }}</div>{% endif %}
+      <div class="field">
+        <label for="username">Username</label>
+        <input class="input" id="username" name="username" value="{{ username }}" autocomplete="username" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary btn-lg">Log in</button>
+    </form>
+
+    <div class="hint">
+      <span>💡</span>
+      <div>
+        <b>Trying it out?</b> Every practice listener has the password <code>music330</code>.
+        For example, log in as <code>brave_falcon3</code> or <code>silver_raven74</code>.
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

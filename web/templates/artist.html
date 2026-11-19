@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}{{ artist.artist_name }}{% endblock %}
+{% block content %}
+
+<section class="banner artist-banner" style="--h: {{ artist.artist_id|hue }}">
+  {{ ui.avatar(artist.artist_id, artist.artist_name) }}
+  <div>
+    <span class="eyebrow">Artist</span>
+    <h1>{{ artist.artist_name }}</h1>
+    <div class="meta-line">
+      {% if artist.origin_state %}<span>From <b>{{ artist.origin_state }}</b></span><span class="dot"></span>{% endif %}
+      <span>Since <b>{{ artist.debut_year }}</b></span><span class="dot"></span>
+      <span><b>{{ albums|length }}</b> album{{ "" if albums|length == 1 else "s" }}</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head"><div><h2>Popular songs</h2><p>Most streams on other music services.</p></div></div>
+  {% if popular %}
+    {{ ui.tracks_head() }}
+    <ol class="tracks">
+      {% for s in popular %}{{ ui.song_row(s, num=loop.index, show_album=false) }}{% endfor %}
+    </ol>
+  {% else %}
+    {% call ui.empty("🎤", "No songs yet", "This artist has no songs in the catalog yet.") %}{% endcall %}
+  {% endif %}
+</section>
+
+<section class="section">
+  <div class="section-head"><div><h2>Albums</h2></div></div>
+  {% if albums %}
+    <div class="grid grid-albums">
+      {% for a in albums %}
+        <a class="album-card" href="{{ url_for('catalog.album', album_id=a.album_id) }}">
+          {{ ui.cover(a.album_id, a.album_name) }}
+          <h3>{{ a.album_name|or_untitled }}</h3>
+          <p>{{ a.release_year }} · {{ a.songs|plural("song") }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% call ui.empty("💿", "No albums yet", "Some artists in the practice data have no albums. That's on purpose, for LEFT JOIN practice.") %}{% endcall %}
+  {% endif %}
+</section>
+
+{% endblock %}
