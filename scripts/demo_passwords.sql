@@ -1,7 +1,8 @@
--- Demo passwords for the practice listeners (run after migration 012).
+-- Demo passwords for the practice listeners (run after migration 012 and the content pack).
 --
--- The 40 practice listeners come from data/listener.csv, which has no passwords.
--- This gives all of them the same demo password, so you can log in as any of them:
+-- The practice listeners come from data/listener.csv (40, Stage 2) and
+-- data/content/listener.csv (80 more), which have no passwords. This gives all of them
+-- the same demo password, so you can log in as any of them:
 --
 --     password: music330
 --

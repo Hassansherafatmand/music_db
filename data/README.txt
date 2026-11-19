@@ -31,9 +31,33 @@ Stage 4 (more genres per song, and reviews), import after migration 010:
 11. review.csv: 90 reviews (listener_id + album_id, 1 to 5 stars) of 77 albums;
     15 have no text (empty -> NULL), and 7 listeners have none
 
+The content pack (for the website), import after migrations 012 to 016:
+scripts/import_content.sql loads data/content/*.csv. scripts/make_content.py made these
+files from the files above (a fixed random seed, so it makes the same files every time).
+The files above are NOT changed, so Stages 1 to 4 stay as they are.
+12. content/album.csv: 12 albums for the 5 artists who had none (one plays Classical)
+13. content/song.csv: 243 songs: 156 fill up the albums that had 0 or 2 songs (now every
+    album has 3 to 10), and 87 are on the new albums
+14. content/song_genre.csv: 273 rows: the new songs' genres, plus 12 old songs that get
+    Classical as a second genre (now 37 songs are Classical)
+15. content/listener.csv: 80 listeners (ids 41 to 120). Each one has a "taste": 1 to 3
+    favorite genres. The taste is not in any file: it shows in what they love and play.
+16. content/favorite.csv: 1,757 favorites, mostly from each listener's genres
+17. content/playlist.csv and playlist_song.csv: 90 playlists with 862 songs
+18. content/play.csv: 5,836 plays up to 2026-11-18 (the old listeners keep listening
+    after 2026-11-09, too)
+19. content/review.csv: 334 reviews with real-sounding text (37 stars only); review and
+    comment texts are in "quotes", because they can have commas. (3, 101) stays free for
+    queries/showcase.sql.
+20. content/review_comment.csv: 432 comments under the reviews (sometimes the reviewer
+    answers back)
+
+Totals after the content pack: 50 artists, 196 albums, 1,199 songs, 15 genres,
+120 listeners, 2,005 favorites, 133 playlists, 8,292 plays, 424 reviews, 432 comments.
+
 Passwords (for the website):
-- listener.csv has no passwords. After migration 012, scripts/demo_passwords.sql gives
-  every practice listener the same demo password: music330
+- listener.csv and content/listener.csv have no passwords. scripts/demo_passwords.sql
+  (after the content pack) gives every practice listener the same demo password: music330
 
 Relationships:
 - artist 1 -> many album through album.artist_id
@@ -44,8 +68,10 @@ Relationships:
 - playlist 1 -> many playlist_song through playlist_song.playlist_id
 - song 1 -> many favorite, playlist_song, play and song_genre through song_id
 - album 1 -> many review through review.album_id
+- review 1 -> many review_comment through (reviewer_id, album_id), a two-column key
+- listener 1 -> many review_comment through review_comment.listener_id
 
-Practice design:
+Practice design (the files above; the content pack fills the gaps for the website):
 - album rows are intentionally scattered; the same artist_id is not grouped together.
 - song rows are intentionally scattered; the same album_id is not grouped together.
 - artists have different album counts, including artists with zero albums.

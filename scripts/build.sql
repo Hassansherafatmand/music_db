@@ -41,6 +41,13 @@ SOURCE migrations/010_song_genre_pivot.sql;
 SOURCE migrations/011_create_review.sql;
 SOURCE scripts/import_stage_4.sql;
 
--- The website (after Stage 4): listeners log in with a password
+-- The website (after Stage 4): passwords, comments, an audit log, views, indexes,
+-- and more demo content. The demo passwords come last, so the content pack's
+-- listeners get one too.
 SOURCE migrations/012_add_listener_password.sql;
+SOURCE migrations/013_create_review_comment.sql;
+SOURCE migrations/014_create_audit_log.sql;
+SOURCE migrations/015_create_views.sql;
+SOURCE migrations/016_add_indexes.sql;
+SOURCE scripts/import_content.sql;
 SOURCE scripts/demo_passwords.sql;

@@ -1,0 +1,335 @@
+listener_id,album_id,stars,review_text,review_date
+41,190,5,This album found me at the right time.,2026-08-18
+41,284,3,"Some good moments, some forgettable ones.",2026-02-18
+41,226,3,It's okay. 'Southern Light' is the only song I came back to.,2025-11-21
+42,139,5,I can't stop playing this one. Loud in the best way.,2026-10-18
+43,271,3,"Not bad, not amazing. I skip 'Golden Miles' every time. Short, fast and angry. Can't wait for the next one.",2025-03-04
+43,132,4,Really solid album. That guitar tone is pure blues. Worth it for the last song alone.,2026-08-28
+43,281,3,"Not bad, not amazing. Recommended!",2025-10-18
+44,179,5,I can't stop playing this one. Don't skip 'Southern Summer'. Loud in the best way.,2026-10-25
+44,159,3,It's okay. The beats hit hard. Great for the gym.,2024-11-17
+44,171,1,"Sorry, this one is a miss.",2025-03-15
+45,286,5,,2026-02-14
+45,108,4,Strong songs and a great mood. Don't skip 'Moving North'. Recommended!,2026-06-01
+45,245,4,"Very good, with one or two weak spots. Feels like a small club at 2 a.m. Can't wait for the next one.",2026-03-10
+45,228,4,Better than I expected. 'Cold Bridge' gives me chills every time. Great storytelling.,2026-01-29
+45,285,4,Strong songs and a great mood. 'Romance' gives me chills every time. Calm and beautiful.,2026-09-02
+45,163,3,"It's okay. Simple and warm, like a campfire.",2025-10-17
+45,243,4,Almost perfect.,2026-09-04
+46,224,2,"The production feels flat. Not for me, but maybe for you.",2026-08-01
+46,122,3,I wanted to like it more. Even 'After Window' couldn't save it. Recommended!,2026-02-25
+46,244,4,"Very good, with one or two weak spots. 'After North' gives me chills every time. Loud in the best way. Headphones on, lights off.",2025-11-23
+46,109,2,Not really for me.,2025-08-18
+47,177,2,"A few nice ideas, but it drags. I skip 'Golden Glass' every time. Maybe their next one.",2026-03-17
+47,118,2,,2024-11-13
+47,264,1,Not my thing at all. I skip 'Quiet Echo' every time.,2024-06-20
+48,246,3,It's okay.,2025-12-20
+48,107,5,"Front to back, no skips. Don't skip 'After Home'. Great storytelling.",2026-03-16
+48,106,4,Strong songs and a great mood. 'Southern Wire' gives me chills every time. Great for the gym.,2026-05-12
+48,273,4,A grower: it gets better every time. Great for the gym.,2026-05-19
+48,102,5,This album found me at the right time.,2025-12-28
+49,236,2,"Not really for me. 'Golden Bloom' is the only song I came back to. Not for me, but maybe for you.",2026-10-26
+49,265,4,Really solid album. 'Cold Bridge' has been on repeat all week. Worth it for the last song alone.,2026-08-30
+49,112,4,Strong songs and a great mood. Loud in the best way.,2025-11-19
+49,164,4,Strong songs and a great mood. 'Golden Miles' has been on repeat all week. Raw and honest.,2026-10-30
+49,271,5,Pure magic from start to finish. 'After Street' gives me chills every time.,2026-01-01
+50,129,2,Not really for me. 'Midnight Memory' is the only song I came back to.,2026-01-18
+50,216,5,I can't stop playing this one. 'Midnight Fire' gives me chills every time. Pure energy.,2025-12-18
+51,118,2,Too repetitive.,2025-06-06
+51,265,5,"An instant classic. Heavy and fast, just how I like it.",2025-06-10
+52,232,5,"This album found me at the right time. 'Lonely Bridge' gives me chills every time. Headphones on, lights off.",2026-03-09
+53,226,5,An instant classic. 'Quiet World' has been on repeat all week.,2026-10-15
+53,157,4,"Almost perfect. The beats hit hard. Headphones on, lights off.",2026-09-05
+53,289,5,An instant classic. 'Midnight Bridge' gives me chills every time. The beats hit hard. Give it a few listens.,2026-09-24
+53,291,5,"Ten out of ten, would listen again. Recommended!",2026-11-13
+53,213,1,"I really tried, but no.",2026-09-06
+53,158,5,Pure magic from start to finish. Give it a few listens.,2026-06-25
+54,169,5,An instant classic. Don't skip 'Midnight Fire'.,2026-02-05
+54,146,4,,2025-09-30
+54,124,4,A grower: it gets better every time. Every chorus gets stuck in my head.,2025-11-08
+55,111,3,,2025-10-11
+55,138,1,"Not my thing at all. 'Broken Compass' is fine, the rest is forgettable. I'll stick to their older stuff.",2025-12-08
+55,156,3,,2025-10-01
+55,123,4,A grower: it gets better every time. Catchy choruses everywhere. Worth it for the last song alone.,2025-01-09
+55,168,2,Not really for me. Even 'Midnight Time' couldn't save it. Maybe their next one.,2026-04-03
+55,235,3,Fine as background music. Sharp lyrics and a great flow.,2026-03-30
+56,153,3,Fine as background music. The guitars are huge. Great for the gym.,2026-03-05
+57,279,1,"Sorry, this one is a miss. 'Long Way Home' is the only song I came back to. Not for me, but maybe for you.",2026-08-01
+57,244,4,Almost perfect.,2026-10-17
+57,129,5,"Ten out of ten, would listen again. Don't skip 'After Home'.",2026-10-29
+57,163,5,"Front to back, no skips. Simple and warm, like a campfire.",2026-08-31
+58,287,4,Almost perfect.,2026-08-02
+58,218,2,Not really for me.,2026-07-03
+59,172,4,Almost perfect. 'Cold Highway' has been on repeat all week. The guitars are huge.,2026-09-21
+59,211,1,,2026-10-17
+59,254,5,Pure magic from start to finish. Smooth vocals all the way.,2026-08-19
+59,212,2,"Too repetitive. 'Golden Bloom' is fine, the rest is forgettable.",2026-07-27
+59,223,5,Pure magic from start to finish. 'Last Call' is the highlight for me. Catchy choruses everywhere.,2026-10-10
+60,216,4,Really solid album. 'After Current' is the highlight for me. Pure energy. My new road trip album.,2026-05-15
+60,116,5,This album found me at the right time. 'Golden Glass' has been on repeat all week. So smooth.,2026-11-03
+60,141,2,,2026-06-25
+61,188,4,"Very good, with one or two weak spots. Don't skip 'Quiet Echo'.",2026-10-17
+61,141,4,"Very good, with one or two weak spots. Headphones on, lights off.",2025-08-17
+61,202,2,Disappointing after their last album.,2026-05-11
+61,248,2,"A few nice ideas, but it drags. 'Golden Bloom' is fine, the rest is forgettable. Maybe their next one.",2026-10-18
+61,284,3,,2026-08-24
+62,123,4,"Very good, with one or two weak spots. The opener 'Southern Summer' hooked me right away. Catchy choruses everywhere.",2026-11-05
+62,107,4,"Very good, with one or two weak spots. Feels like a long drive through small towns. Can't wait for the next one.",2026-10-24
+62,173,5,I can't stop playing this one. 'Hidden Echo' is the highlight for me. My new road trip album.,2026-11-05
+63,220,4,Strong songs and a great mood.,2026-09-28
+64,126,5,I can't stop playing this one. Great for the gym.,2026-10-21
+65,234,4,Really solid album. Pure energy.,2026-10-13
+65,271,5,"Ten out of ten, would listen again. Don't skip 'Cold Bridge'. Great for the gym.",2026-11-06
+65,242,3,A mixed bag. Catchy choruses everywhere.,2026-09-17
+66,129,5,"Front to back, no skips. Headphones on, lights off.",2026-11-04
+66,291,3,Fine as background music. I skip 'Empty Train' every time. Perfect for late-night drives. Worth it for the last song alone.,2026-10-02
+67,205,2,"A few nice ideas, but it drags. 'Northern Fire' is the only song I came back to.",2026-10-17
+67,276,5,"Ten out of ten, would listen again. 'After Home' is the highlight for me.",2026-10-15
+67,118,3,A mixed bag. 'Quiet Echo' is the only song I came back to.,2026-10-28
+67,121,5,This album found me at the right time.,2026-11-12
+68,264,4,Really solid album. 'Quiet Echo' has been on repeat all week. The beats hit hard.,2026-06-27
+68,230,3,"Not bad, not amazing. 'Quiet Echo' is fine, the rest is forgettable. Raw and honest.",2025-12-03
+69,211,2,Too repetitive. Even 'Quiet Road' couldn't save it.,2026-06-19
+69,233,5,Easily one of the best albums I heard this year. 'After Window' gives me chills every time.,2026-02-14
+69,235,5,An instant classic.,2025-10-09
+69,177,4,"Very good, with one or two weak spots.",2026-11-09
+69,148,5,"Ten out of ten, would listen again. 'Midnight Fire' gives me chills every time. Small, honest songs.",2026-01-25
+69,289,2,Disappointing after their last album. 'Midnight Echo' is the only song I came back to. I'll stick to their older stuff.,2025-04-25
+69,274,3,"Some good moments, some forgettable ones. Even 'Midnight Time' couldn't save it. Perfect for late-night drives. Perfect for a rainy day.",2025-03-26
+69,226,5,,2026-02-16
+70,129,1,Not my thing at all. I skip 'After Home' every time.,2025-10-09
+70,170,4,,2025-11-17
+70,237,4,Strong songs and a great mood.,2025-01-02
+71,251,3,A mixed bag. Even 'Golden Signal' couldn't save it.,2026-11-13
+71,233,4,"Very good, with one or two weak spots. Recommended!",2026-10-06
+72,156,5,I can't stop playing this one. 'One More Night' has been on repeat all week. Perfect for late-night drives.,2025-10-30
+72,286,3,I wanted to like it more. Perfect for a rainy day.,2026-04-04
+73,146,4,Strong songs and a great mood. The opener 'Southern Summer' hooked me right away.,2026-06-29
+73,286,4,Really solid album. Don't skip 'Waltz of the Harbor'.,2026-01-20
+73,244,2,The production feels flat.,2026-10-30
+74,156,3,"Fine as background music. 'Southern Light' is fine, the rest is forgettable. Perfect for late-night drives. Headphones on, lights off.",2025-11-07
+74,125,4,Better than I expected. Loud in the best way.,2026-07-29
+74,141,2,"Too repetitive. 'Cold Moon' is fine, the rest is forgettable. Not for me, but maybe for you.",2026-06-10
+75,117,5,"An instant classic. 'After Home' gives me chills every time. Heavy and fast, just how I like it.",2025-10-06
+75,118,5,"Front to back, no skips. The opener 'Neon Signs 5' hooked me right away.",2025-06-14
+75,114,1,"Sorry, this one is a miss.",2026-01-15
+75,153,4,Really solid album. The guitars are huge.,2025-04-16
+76,107,5,"Ten out of ten, would listen again.",2026-11-06
+76,287,5,,2026-10-01
+77,187,4,Really solid album. Weird in a good way. Give it a few listens.,2026-10-10
+77,286,5,An instant classic. Great for studying.,2026-05-08
+77,221,5,I can't stop playing this one. Perfect for late-night drives.,2026-08-18
+77,237,4,,2026-05-21
+77,172,5,I can't stop playing this one. The guitars are huge.,2026-04-20
+78,146,4,"Very good, with one or two weak spots. Catchy choruses everywhere.",2025-11-28
+78,219,3,It's okay. Not like anything else I listen to. Give it a few listens.,2026-01-15
+78,135,3,"It's okay. 'Midnight Memory' is the only song I came back to. Simple and warm, like a campfire. Give it a few listens.",2026-04-14
+78,141,4,Really solid album. The opener 'Cold Moon' hooked me right away. The drums are insane.,2026-03-16
+78,136,4,"A grower: it gets better every time. Headphones on, lights off.",2025-05-07
+78,198,3,"I wanted to like it more. 'Golden Bloom' is fine, the rest is forgettable. Perfect for a rainy day.",2024-12-17
+79,102,4,,2026-03-10
+79,244,5,This album found me at the right time.,2025-09-06
+80,123,4,Better than I expected. Don't skip 'Last Call'.,2024-12-23
+80,133,1,Not my thing at all. 'After the Rain 6' is the only song I came back to.,2025-09-20
+80,267,3,,2026-06-19
+81,276,4,Strong songs and a great mood. 'Last Call' gives me chills every time. Can't wait for the next one.,2025-12-03
+81,196,4,Better than I expected. Don't skip 'Cold Moon'. Great for the gym.,2026-05-02
+81,155,3,Fine as background music. 'Golden Bloom' is the only song I came back to.,2026-05-03
+81,246,5,I can't stop playing this one. The synths are gorgeous.,2026-06-05
+81,199,5,"Front to back, no skips. 'Midnight Again' is the highlight for me. Weird in a good way.",2026-08-24
+81,225,4,,2026-09-24
+81,102,5,This album found me at the right time. 'Golden Hour 3' gives me chills every time.,2026-08-06
+82,107,4,Better than I expected. 'After Home' is the highlight for me. Great storytelling.,2025-12-09
+82,150,1,"Sorry, this one is a miss. 'After Home' is the only song I came back to. Maybe their next one.",2026-01-06
+82,270,5,An instant classic. The opener 'Southern Light' hooked me right away.,2026-03-22
+82,287,4,,2025-10-27
+82,142,4,Almost perfect. Not like anything else I listen to.,2026-09-25
+83,242,5,An instant classic.,2025-11-15
+83,138,5,Pure magic from start to finish. The opener 'Midnight Fire' hooked me right away. Perfect for late-night drives. Worth it for the last song alone.,2026-04-14
+83,217,5,,2026-07-23
+83,170,3,Fine as background music. Even 'Golden Bloom' couldn't save it.,2026-06-15
+83,150,3,"I wanted to like it more. Even 'Southern Dream' couldn't save it. Short, fast and angry. My new road trip album.",2026-06-08
+83,149,4,,2026-02-13
+84,233,3,"Not bad, not amazing. Headphones on, lights off.",2026-08-09
+84,120,5,"Wow. Just wow. The opener 'Open Window' hooked me right away. Simple and warm, like a campfire.",2026-08-04
+84,205,3,,2026-08-22
+84,253,5,Pure magic from start to finish. Great storytelling. Great for the gym.,2025-03-31
+86,246,5,An instant classic. 'Cold Valley' is the highlight for me. The synths are gorgeous. My new road trip album.,2026-04-01
+86,179,5,I can't stop playing this one. My new road trip album.,2025-08-07
+87,228,2,Disappointing after their last album. 'Golden Signal' is the only song I came back to. I'll stick to their older stuff.,2026-08-11
+87,130,5,,2026-11-12
+87,133,2,The production feels flat.,2026-04-19
+87,248,4,Strong songs and a great mood. 'Cold Sky' has been on repeat all week. That guitar tone is pure blues.,2026-04-21
+87,112,3,"A mixed bag. 'Long Way Home' is fine, the rest is forgettable. Loud in the best way.",2026-02-21
+87,109,5,I can't stop playing this one. Every chorus gets stuck in my head. Worth it for the last song alone.,2026-03-22
+87,243,3,"Not bad, not amazing. I skip 'Southern Light' every time. Worth it for the last song alone.",2025-12-26
+87,159,5,,2026-11-02
+87,114,4,Almost perfect. My new road trip album.,2026-10-29
+88,215,4,,2024-08-14
+88,126,3,"Not bad, not amazing. 'Under the Bridge' is fine, the rest is forgettable. The guitars are huge. Perfect for a rainy day.",2024-12-16
+88,105,3,I wanted to like it more. I skip 'Midnight Shadow' every time. Worth it for the last song alone.,2025-08-20
+88,281,5,Easily one of the best albums I heard this year. The opener 'Neon Signs' hooked me right away.,2025-07-21
+88,227,2,Too repetitive. I skip 'Midnight Memory' every time. Maybe their next one.,2025-12-24
+88,212,4,A grower: it gets better every time. Don't skip 'Cold Sky'.,2025-06-09
+88,262,1,"I really tried, but no. Even 'Summer Ocean' couldn't save it.",2025-01-08
+89,123,5,,2026-03-25
+89,283,3,"Some good moments, some forgettable ones. Even 'Golden Miles' couldn't save it. So smooth.",2026-10-22
+90,182,4,,2026-04-13
+91,106,4,Really solid album.,2025-12-10
+91,253,5,Wow. Just wow. The opener 'Cold Moon' hooked me right away. Great for the gym.,2025-08-11
+91,170,4,A grower: it gets better every time. Great for the gym.,2025-09-15
+91,249,4,Almost perfect.,2025-11-20
+91,282,3,"It's okay. 'Midnight Shadow' is fine, the rest is forgettable.",2025-12-13
+92,215,4,Really solid album.,2025-05-27
+92,131,5,"Ten out of ten, would listen again. The opener 'Golden Hour' hooked me right away.",2026-11-13
+93,274,5,"Front to back, no skips. Don't skip 'Last Call'.",2026-02-04
+93,247,4,Almost perfect. That voice! Perfect for a rainy day.,2026-08-13
+93,189,5,,2026-02-26
+93,232,3,"Not bad, not amazing. The beats hit hard.",2026-05-13
+94,148,1,Not my thing at all. Even 'After Home' couldn't save it.,2026-04-18
+94,278,4,Strong songs and a great mood.,2026-09-02
+94,200,5,Pure magic from start to finish.,2026-05-17
+94,197,4,"Very good, with one or two weak spots. 'Long Way Home' gives me chills every time. Not like anything else I listen to.",2026-04-19
+94,121,3,"Not bad, not amazing. 'Southern Light' is fine, the rest is forgettable. Feels like a small club at 2 a.m.",2026-04-05
+95,294,3,It's okay. Even 'Broken Fire' couldn't save it.,2025-01-17
+95,190,5,I can't stop playing this one. Sharp lyrics and a great flow.,2024-10-13
+95,167,2,"Too repetitive. 'Golden Train' is the only song I came back to. Not for me, but maybe for you.",2024-08-22
+95,189,3,It's okay. Not like anything else I listen to. Recommended!,2026-07-23
+95,142,5,Pure magic from start to finish. Don't skip 'Southern Rain'. Give it a few listens.,2025-09-07
+96,156,2,"A few nice ideas, but it drags.",2026-08-04
+96,256,5,Wow. Just wow. Don't skip 'Southern Summer'. The synths are gorgeous. Can't wait for the next one.,2026-07-26
+98,175,3,"Some good moments, some forgettable ones. 'Golden Glass' is fine, the rest is forgettable.",2026-08-03
+98,130,5,Pure magic from start to finish. Perfect for a rainy day.,2026-04-02
+98,240,5,An instant classic. 'Quiet Thunder' is the highlight for me.,2025-09-11
+98,189,4,"Very good, with one or two weak spots. 'Golden Bloom' gives me chills every time. Not like anything else I listen to.",2026-11-05
+99,161,3,I wanted to like it more. The guitars are huge.,2025-07-25
+99,150,3,"It's okay. 'After Home' is fine, the rest is forgettable. Short, fast and angry.",2026-04-05
+99,116,4,Really solid album. Don't skip 'Static Hearts'. So smooth. My new road trip album.,2025-04-02
+99,221,4,A grower: it gets better every time. 'Southern Light' gives me chills every time. Perfect for late-night drives.,2025-08-21
+101,137,3,,2026-08-10
+101,191,5,Wow. Just wow. Smooth vocals all the way. Perfect for a rainy day.,2025-10-15
+101,139,4,A grower: it gets better every time. 'Static Hearts' has been on repeat all week.,2025-09-02
+101,233,4,"Very good, with one or two weak spots. 'Golden Signal' has been on repeat all week. Headphones on, lights off.",2026-05-30
+102,108,5,I can't stop playing this one. Great for the gym.,2024-12-16
+102,234,4,Strong songs and a great mood. Pure energy.,2026-05-04
+102,288,5,,2024-12-11
+102,247,4,Better than I expected. That voice! Worth it for the last song alone.,2024-09-16
+102,180,3,A mixed bag. Even 'After Window' couldn't save it. Perfect for a rainy day.,2024-11-16
+102,141,5,This album found me at the right time. 'Southern Wire' has been on repeat all week. Give it a few listens.,2025-12-23
+102,168,5,Wow. Just wow. Don't skip 'Quiet Echo'.,2025-02-23
+102,245,4,Really solid album. 'Midnight Shadow' gives me chills every time. Feels like a small club at 2 a.m.,2026-03-05
+103,179,4,"Better than I expected. 'Cold Moon' is the highlight for me. The guitars are huge. Headphones on, lights off.",2026-11-09
+103,209,1,,2026-08-16
+103,266,3,I wanted to like it more. Loud in the best way.,2026-06-09
+103,204,3,A mixed bag. Loud in the best way.,2026-06-22
+103,161,3,"Not bad, not amazing. 'After North' is fine, the rest is forgettable.",2026-09-29
+104,240,4,A grower: it gets better every time. The opener 'Quiet Thunder' hooked me right away. Every chorus gets stuck in my head. Can't wait for the next one.,2026-10-21
+104,287,5,I can't stop playing this one. Great for studying.,2026-07-16
+104,252,5,Wow. Just wow. Warm and full of feeling.,2026-08-06
+104,109,4,Really solid album. 'Southern Light' has been on repeat all week.,2026-11-01
+104,172,5,"Ten out of ten, would listen again. Don't skip 'Last Call'. Worth it for the last song alone.",2026-10-19
+104,217,4,"Very good, with one or two weak spots. My new road trip album.",2026-10-26
+105,134,2,"Too repetitive. 'Paper Skyline 7' is fine, the rest is forgettable. I'll stick to their older stuff.",2025-02-02
+106,127,4,Almost perfect. The opener 'Golden Signal' hooked me right away. The synths are gorgeous.,2025-01-16
+106,107,4,Almost perfect. The opener 'Southern Wire' hooked me right away. Great storytelling.,2025-10-06
+106,287,5,Easily one of the best albums I heard this year.,2025-09-28
+107,235,2,"Too repetitive. Even 'Golden Signal' couldn't save it. Not for me, but maybe for you.",2025-10-17
+108,245,5,"Ten out of ten, would listen again. Don't skip 'Cold Valley'.",2026-07-10
+108,223,3,A mixed bag. Give it a few listens.,2026-02-13
+108,115,3,It's okay. Smooth vocals all the way. Great for the gym.,2026-02-23
+108,190,1,Couldn't finish it.,2026-09-26
+108,206,4,Strong songs and a great mood. 'Last Call' has been on repeat all week. Recommended!,2026-08-12
+109,148,4,"Almost perfect. Small, honest songs. My new road trip album.",2026-11-07
+109,202,3,It's okay. I skip 'Golden Miles' every time. Every chorus gets stuck in my head. Recommended!,2026-11-14
+109,182,1,Not my thing at all.,2026-11-10
+110,215,2,Not really for me. Even 'After North' couldn't save it. I'll stick to their older stuff.,2026-06-22
+110,124,2,Disappointing after their last album. I skip 'Neon Signs' every time.,2025-10-29
+110,281,3,It's okay. Even 'After Window' couldn't save it. Weird in a good way. Can't wait for the next one.,2026-08-20
+110,242,4,"Almost perfect. Headphones on, lights off.",2026-05-25
+110,118,4,"Really solid album. Heavy and fast, just how I like it. Give it a few listens.",2026-04-09
+110,114,3,"I wanted to like it more. 'Golden Train' is fine, the rest is forgettable. The beats hit hard.",2025-09-27
+110,112,4,A grower: it gets better every time. The opener 'Quiet Echo' hooked me right away.,2026-05-02
+110,120,3,"Not bad, not amazing. I skip 'Last Call' every time.",2025-09-02
+111,168,3,"Some good moments, some forgettable ones. I skip 'Neon Signs' every time. Headphones on, lights off.",2026-07-18
+111,215,3,"I wanted to like it more. Small, honest songs. Perfect for a rainy day.",2026-10-16
+111,161,5,Easily one of the best albums I heard this year. 'Southern Dream' is the highlight for me. The guitars are huge.,2026-07-10
+111,124,1,"I really tried, but no. Maybe their next one.",2026-11-07
+111,141,5,This album found me at the right time. The drums are insane. Can't wait for the next one.,2026-10-26
+111,134,4,"Very good, with one or two weak spots. 'First Light' gives me chills every time. Sharp lyrics and a great flow. Headphones on, lights off.",2026-09-26
+111,118,4,,2026-08-20
+112,123,5,I can't stop playing this one. Catchy choruses everywhere. Perfect for a rainy day.,2025-09-23
+112,287,4,Almost perfect. Perfect for a rainy day.,2026-09-25
+112,110,3,"Some good moments, some forgettable ones. 'Quiet Storm' is the only song I came back to. Every chorus gets stuck in my head.",2025-09-08
+112,156,2,Too repetitive.,2026-02-24
+112,146,2,"The production feels flat. I skip 'Golden Train' every time. Not for me, but maybe for you.",2025-08-31
+112,213,5,Easily one of the best albums I heard this year. Perfect for late-night drives.,2026-07-30
+113,228,5,Pure magic from start to finish. 'Golden Miles' gives me chills every time. Feels like a long drive through small towns.,2026-09-19
+115,257,5,Wow. Just wow. Don't skip 'Quiet Echo'. Worth it for the last song alone.,2026-10-02
+115,234,4,"Strong songs and a great mood. The opener 'After Window' hooked me right away. Short, fast and angry.",2026-09-20
+115,177,3,A mixed bag.,2026-10-06
+115,216,3,"It's okay. 'Southern Wire' is the only song I came back to. Short, fast and angry.",2026-10-03
+117,242,4,A grower: it gets better every time. 'Cold Sky' is the highlight for me.,2026-06-29
+117,235,4,Almost perfect. 'Cold Highway' gives me chills every time. The beats hit hard. Recommended!,2025-11-22
+117,255,4,,2025-10-24
+118,203,5,"Ten out of ten, would listen again. 'Neon Signs' is the highlight for me.",2026-11-05
+118,125,4,A grower: it gets better every time. The guitars are huge.,2026-07-29
+119,150,4,"Better than I expected. Short, fast and angry. My new road trip album.",2026-08-21
+120,124,5,"Ten out of ten, would listen again. The opener 'Quiet Storm 4' hooked me right away.",2026-10-10
+1,189,2,"Too repetitive. 'Paper Signal' is fine, the rest is forgettable. I'll stick to their older stuff.",2026-10-07
+1,137,4,"Very good, with one or two weak spots. The opener 'Paper Skyline' hooked me right away. Recommended!",2026-04-15
+2,247,4,Really solid album. 'Quiet Line' has been on repeat all week. Perfect for a rainy day.,2025-06-28
+2,119,5,"An instant classic. Simple and warm, like a campfire.",2025-10-08
+3,169,5,"I can't stop playing this one. 'Quiet Road' gives me chills every time. Simple and warm, like a campfire.",2026-07-25
+3,230,4,Strong songs and a great mood. That guitar tone is pure blues. Recommended!,2026-04-12
+4,283,3,It's okay.,2025-09-10
+7,218,4,,2025-07-09
+7,163,4,"A grower: it gets better every time. 'Southern Dream' is the highlight for me. Simple and warm, like a campfire.",2025-10-10
+7,146,3,"Not bad, not amazing. 'Cold Moon' is fine, the rest is forgettable.",2025-09-07
+8,161,5,"Front to back, no skips. 'Golden Glass' is the highlight for me. The guitars are huge.",2025-07-18
+8,285,3,Fine as background music. Even 'Prelude for Rain' couldn't save it. The strings are breathtaking. My new road trip album.,2025-01-31
+9,105,5,This album found me at the right time.,2026-06-10
+9,224,5,"Ten out of ten, would listen again. The opener 'Neon Signs' hooked me right away. Pure energy.",2026-10-21
+9,273,2,"Disappointing after their last album. 'Quiet Line' is fine, the rest is forgettable.",2026-09-17
+10,229,4,Better than I expected. The opener 'Quiet Road' hooked me right away.,2025-12-25
+11,287,2,The production feels flat. Even 'Adagio for Strings' couldn't save it.,2025-08-09
+11,185,2,"A few nice ideas, but it drags. Even 'Midnight Shadow' couldn't save it. Maybe their next one.",2026-09-21
+11,174,5,This album found me at the right time. Worth it for the last song alone.,2026-02-19
+12,198,4,Better than I expected. 'Slow Dancing' has been on repeat all week. Feels like a small club at 2 a.m. Great for the gym.,2026-09-09
+12,159,3,"Some good moments, some forgettable ones. I skip 'Northern Morning' every time.",2026-08-06
+12,228,5,Easily one of the best albums I heard this year. 'Golden Signal' has been on repeat all week. Feels like a long drive through small towns.,2026-10-04
+13,105,3,,2026-10-28
+13,104,4,Really solid album. Great storytelling.,2026-09-07
+16,109,3,"Some good moments, some forgettable ones. Every chorus gets stuck in my head. Recommended!",2025-12-03
+18,103,4,,2026-11-01
+18,170,4,A grower: it gets better every time. 'Midnight Memory' gives me chills every time. So smooth.,2026-06-11
+19,209,5,"Ten out of ten, would listen again. 'Stay a While' is the highlight for me. Just a voice and a guitar, and it works.",2026-01-07
+20,216,4,Better than I expected.,2026-06-25
+21,219,4,Really solid album. Don't skip 'After Home'.,2026-08-14
+21,259,4,,2026-10-08
+23,229,5,Pure magic from start to finish. Smooth vocals all the way.,2026-11-11
+23,265,5,"Easily one of the best albums I heard this year. 'Cold Bridge' is the highlight for me. Heavy and fast, just how I like it.",2024-08-22
+23,147,5,"Ten out of ten, would listen again. 'Golden Train' gives me chills every time.",2025-12-06
+25,277,5,"Front to back, no skips. Feels very personal. Can't wait for the next one.",2026-05-03
+25,119,5,Pure magic from start to finish. 'After Home' gives me chills every time.,2026-08-21
+25,127,3,Fine as background music. 'Empty Highway' is the only song I came back to.,2026-07-30
+26,260,5,Easily one of the best albums I heard this year. 'Quiet Line' has been on repeat all week.,2025-04-16
+26,150,2,,2025-03-18
+27,198,5,I can't stop playing this one. 'Northern Thunder' gives me chills every time. My new road trip album.,2026-10-19
+27,153,4,Better than I expected. 'Southern Rain' has been on repeat all week.,2026-06-02
+28,125,5,Easily one of the best albums I heard this year. The opener 'Midnight Again' hooked me right away.,2026-08-16
+28,173,4,Strong songs and a great mood. The opener 'Paper Planes' hooked me right away.,2025-10-15
+28,122,3,"Some good moments, some forgettable ones. Feels like a small club at 2 a.m.",2026-11-12
+30,152,5,Wow. Just wow. Raw and honest. Great for the gym.,2025-06-06
+31,252,5,Easily one of the best albums I heard this year. The opener 'Amber Lights' hooked me right away. Warm and full of feeling.,2026-04-16
+31,272,5,Easily one of the best albums I heard this year. The synths are gorgeous. Worth it for the last song alone.,2025-12-29
+34,247,4,Almost perfect. 'Quiet Road' has been on repeat all week. That voice! Can't wait for the next one.,2026-05-14
+34,286,3,"Some good moments, some forgettable ones. 'Serenade' is fine, the rest is forgettable. Great for the gym.",2026-04-12
+34,208,2,,2026-01-25
+35,103,2,"Too repetitive. 'No Turning Back 4' is the only song I came back to. Not for me, but maybe for you.",2026-02-25
+35,129,5,,2026-01-19
+35,165,3,"Some good moments, some forgettable ones.",2025-11-22
+36,277,5,Easily one of the best albums I heard this year. Feels very personal.,2025-06-08
+37,273,4,"A grower: it gets better every time. Heavy and fast, just how I like it. Give it a few listens.",2026-11-12
+37,200,3,"Some good moments, some forgettable ones. I skip 'Southern Rain' every time.",2026-10-17
+38,140,5,I can't stop playing this one. Don't skip 'Golden Miles'.,2026-10-25
+39,196,5,"Ten out of ten, would listen again. 'Quiet Road' is the highlight for me. The drums are insane.",2026-01-19
