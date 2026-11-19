@@ -16,11 +16,12 @@ stage files show the plan at each stage, when the website was still only drawn).
 
 | Part | Real? | What it does with the data |
 |---|---|---|
-| Listener website (`web/`) | **real**, Python + Flask | browse and search music; sign up and log in; ♥ songs; make playlists; press Play; write reviews; "My top songs" |
+| Listener website (`web/`) | **real**, Python + Flask | browse, filter and search music; charts; listener profiles; sign up and log in; ♥ songs; make playlists; press Play; write reviews and comments; "My top songs"; "My account" |
 | Web server (Flask) | **real** | gets requests from the browser, runs the SQL from `web/sql/`, and sends back HTML pages |
-| Admin page (`/admin`) | **real**, part of the website | adds artists, albums and songs; sets a song's genres |
-| MySQL database `music_db` | **real** | stores everything |
-| Import scripts | **real** | load the CSV files in `data/` into the tables (one script per stage) |
+| Admin page (`/admin`) | **real**, part of the website | CRUD for music and listeners, moderation (delete reviews and comments), reports, the audit log |
+| The Lab (`/lab`) | **real**, part of the website | shows how it works: SQL injection, indexes with `EXPLAIN`, two browsers at once |
+| MySQL database `music_db` | **real** | stores everything. Its triggers write the audit log by themselves. |
+| Import scripts | **real** | load the CSV files in `data/` into the tables (one script per stage, and one for the content pack) |
 | Nightly top-songs job | **real** (a SQL file, run by hand) | finds what each listener played on one day; the website shows the same idea on "My top songs" |
 
 - The web server sits between the browser and the database. A browser must never talk
@@ -46,12 +47,24 @@ files, run in order), and each finished stage gets a git tag.
 In Stage 4, `song_genre` replaces the column `song.genre_id`, so that one song can have
 more than one genre.
 
-**After Stage 4, the website** needed one more change: migration 012 adds the column
-`listener.password_hash`, so listeners can log in. No new tables, still 11.
+**After Stage 4, the website** needed a few more changes. They are migrations too, so
+the history stays complete:
+
+| Migration | What it adds | Tables in total |
+|---|---|---|
+| 012 | the column `listener.password_hash`, so listeners can log in | 11 |
+| 013 | `review_comment`: comments under reviews | **12** |
+| 014 | `audit_log`, and 4 triggers that write into it | **13** |
+| 015 | 4 views: `album_rating`, `song_popularity`, `listener_activity`, `public_album` | 13 |
+| 016 | indexes for the website's filters and searches (3 of them `FULLTEXT`) | 13 |
+
+Then `scripts/import_content.sql` loads the **content pack** (`data/content/`): more
+made-up data, so the website looks like a real one (every album gets at least 3 songs,
+80 more listeners, reviews with text, comments). The old CSV files are not changed.
 
 ---
 
-## 3. ER diagram (the full design: after Stage 4 and migration 012)
+## 3. ER diagram (the full design: after Stage 4 and migrations 012 to 016)
 
 Each stage file has the diagram for that stage.
 
@@ -70,6 +83,8 @@ erDiagram
     SONG ||--o{ PLAY : "is played"
     LISTENER ||--o{ REVIEW : "writes"
     ALBUM ||--o{ REVIEW : "gets"
+    REVIEW ||--o{ REVIEW_COMMENT : "gets"
+    LISTENER ||--o{ REVIEW_COMMENT : "writes"
 
     ARTIST {
         int artist_id PK
@@ -136,7 +151,27 @@ erDiagram
         varchar review_text
         date review_date
     }
+    REVIEW_COMMENT {
+        int comment_id PK
+        int reviewer_id FK "with album_id: the review"
+        int album_id FK "with reviewer_id: the review"
+        int listener_id FK "who wrote the comment"
+        varchar comment_text
+        datetime commented_at
+    }
+    AUDIT_LOG {
+        int audit_id PK
+        varchar action
+        varchar table_name
+        int row_id
+        varchar details
+        varchar done_by
+        datetime done_at
+    }
 ```
+
+`AUDIT_LOG` has no lines to other tables, on purpose: it keeps history about rows that
+are already deleted (see section 6). Triggers fill it.
 
 ---
 
@@ -259,6 +294,55 @@ one playlist.
 | `review_text` | | optional (up to 500 characters) |
 | `review_date` | | the day it was written (default: today) |
 
+### After Stage 4: the website (migrations 012 to 016)
+
+**`review_comment`** (migration 013): one row for each comment under a review.
+
+| Column | Key | Notes |
+|---|---|---|
+| `comment_id` | PK | |
+| `reviewer_id` | FK → `review` (with `album_id`) | the listener who wrote the review |
+| `album_id` | FK → `review` (with `reviewer_id`) | the album the review is about |
+| `listener_id` | FK → `listener` | who wrote this comment. Deleted together with them (`ON DELETE CASCADE`). |
+| `comment_text` | | required, up to 500 characters: `CHECK (CHAR_LENGTH(TRIM(comment_text)) >= 1)` |
+| `commented_at` | | the date and time (default: now) |
+
+The key of `review` has two columns, so the foreign key `fk_comment_review` has two
+columns too: `(reviewer_id, album_id) REFERENCES review (listener_id, album_id)`. When a
+review is deleted, its comments are deleted too (`ON DELETE CASCADE`).
+
+**`audit_log`** (migration 014): one row each time a listener, artist, album or song is
+deleted.
+
+| Column | Key | Notes |
+|---|---|---|
+| `audit_id` | PK | |
+| `action` | | what happened, like `DELETE` |
+| `table_name` | | in which table |
+| `row_id` | | the id of the deleted row (no foreign key: that row is gone) |
+| `details` | | a copy of the important old values, like the username |
+| `done_by` | | who did it: `admin`, the listener, or the MySQL user (`USER()`) |
+| `done_at` | | the date and time (default: now) |
+
+**Triggers** (migration 014): `trg_listener_deleted`, `trg_artist_deleted`,
+`trg_album_deleted`, `trg_song_deleted`. Each one runs `AFTER DELETE` on its table and
+writes one row into `audit_log`. The website sets `@audit_actor` just before it deletes,
+so the trigger knows who did it. Rows deleted by `ON DELETE CASCADE` don't start
+triggers in MySQL.
+
+**Views** (migration 015): saved `SELECT`s with a name. They store no data.
+
+| View | What it gives |
+|---|---|
+| `album_rating` | for each album with reviews: `review_count` and `avg_stars` |
+| `song_popularity` | for each song: `love_count` (rows in `favorite`) and `play_count` (rows in `play`) |
+| `listener_activity` | for each listener: how many favorites, playlists, plays, reviews and comments |
+| `public_album` | the albums visitors can see: albums with 3 or more songs, with `song_count` |
+
+**Indexes** (migration 016): `idx_song_name`, `idx_artist_state`, `idx_album_year`,
+`idx_play_played_at`, and the `FULLTEXT` indexes `ft_song_name`, `ft_album_name`,
+`ft_artist_name` for the search page.
+
 ---
 
 ## 5. Relationships
@@ -279,6 +363,8 @@ one playlist.
 | `genre` 1 — 0..many `song_genre` | Stage 4: one genre is given to zero or more songs. |
 | `listener` 1 — 0..many `review` | One listener writes zero or more reviews. Each review has exactly one writer. |
 | `album` 1 — 0..many `review` | One album gets zero or more reviews. Each review is for exactly one album. |
+| `review` 1 — 0..many `review_comment` | One review gets zero or more comments. Each comment is under exactly one review. |
+| `listener` 1 — 0..many `review_comment` | One listener writes zero or more comments. Each comment has exactly one writer. |
 
 Many-to-many relationships:
 
@@ -288,8 +374,11 @@ Many-to-many relationships:
 - `song` and `genre`, through `song_genre` (Stage 4)
 - `listener` and `album`, through `review`
 
-A parent can have no children (some artists have no albums yet). But a child always
+A parent can have no children (a new artist has no albums yet). But a child always
 needs its parent, because every foreign key is required (`NOT NULL`).
+
+`review_comment` also gives a chain of cascades: deleting a **listener** deletes their
+**reviews**, and that deletes the **comments** other people wrote under those reviews.
 
 ---
 
@@ -339,6 +428,30 @@ The database is in **3NF**. The important choices:
 - **`password_hash` lives in `listener`** (migration 012). It depends only on
   `listener_id`, the key (3NF). It is a hash, not the password: even someone who reads
   the table can't learn the passwords.
+- **Comments get their own table** (`review_comment`, migration 013). One review can
+  have many comments, so a list of comments inside the review row would break 1NF. A
+  comment depends on its own key, `comment_id`. It doesn't save the reviewer's or the
+  writer's `username`: those depend on `listener_id`, not on `comment_id` (3NF).
+- **`audit_log` keeps copies, on purpose** (migration 014). The rule: a copy is allowed
+  only if it is written down why. Here: a log is **history**. When a listener is
+  deleted, their row is gone, so the log must keep its own copy of the username, or it
+  could not say who was deleted. Nothing updates these rows later, so the copy can't go
+  out of date. That is also why `audit_log` has no foreign keys.
+- **Views instead of saved numbers** (migration 015). The number of reviews, the
+  average stars, the ♥ of a song: we don't save what we can calculate. A view is a saved
+  `SELECT`, so the numbers are always right, and the website writes each calculation
+  only once.
+- **"Finished album" is a view, not a column.** An album with fewer than 3 songs is
+  hidden from visitors. A column like `is_finished` would be a copy of something we can
+  count, and it could be wrong after a song is added or deleted. So the public pages use
+  the view `public_album` (`HAVING COUNT(song_id) >= 3`).
+- **A listener's taste is not saved.** The "top genre" on the Listeners page is
+  calculated from their favorites with a window function, and the "What's new" feed is
+  calculated from 4 tables with `UNION ALL`. No extra tables or columns.
+- **Indexes only where the website searches** (migration 016). An index makes reading
+  faster, but it costs disk space, and every `INSERT`/`UPDATE` must update it too. MySQL
+  already has an index for every primary key, `UNIQUE` and foreign key. The Lab page
+  (`/lab/speed`) shows the difference with `EXPLAIN`.
 
 ---
 
@@ -351,10 +464,13 @@ The database is in **3NF**. The important choices:
 | `docs/stage-1.md` … `stage-4.md` | the diagrams for each stage |
 | `migrations/` | the migrations: small numbered SQL files, run in order |
 | `scripts/import_stage_1.sql` … `import_stage_4.sql` | load each stage's CSV files |
+| `scripts/import_content.sql` | loads the content pack (`data/content/*.csv`) after migration 016 |
+| `scripts/make_content.py` | makes the content pack's CSV files from the old data (always the same files) |
 | `scripts/nightly_top_songs.sql` | the nightly top-songs job (we run it by hand) |
 | `scripts/build.sql` | builds the whole database from zero, stage by stage |
 | `queries/showcase.sql` | the review feature from start to end: `INSERT`, a join with `WHERE`, `GROUP BY`, `DELETE` |
 | `queries/test_constraints.sql` | 7 statements that **must fail**, one for each kind of constraint |
 | `scripts/demo_passwords.sql` | gives every practice listener the demo password `music330` |
 | `web/` | the website (Python + Flask): see [app.md](app.md) |
-| `data/` | made-up practice data (CSV files), generated with AI |
+| `data/` | made-up practice data (CSV files), generated with AI; `data/content/` is the content pack |
+| `run.sh` | sets everything up and starts the website with one command |
