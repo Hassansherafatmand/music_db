@@ -24,13 +24,22 @@ Stage 3 (playlists and plays), import after the files above:
 9. play.csv: 2,456 plays from 2026-10-01 to 2026-11-09 (112 on 2026-11-09);
    5 listeners have none, and the same listener can play a song many times
 
+Stage 4 (more genres per song, and reviews), import after migration 010:
+10. song_genre_extra.csv: 180 extra genres (song_id + genre_id) for 141 songs;
+    39 songs get two extra. Migration 010 already copied every song's first genre
+    into song_genre, so these are second and third genres.
+11. review.csv: 90 reviews (listener_id + album_id, 1 to 5 stars) of 77 albums;
+    15 have no text (empty -> NULL), and 7 listeners have none
+
 Relationships:
 - artist 1 -> many album through album.artist_id
 - album 1 -> many song through song.album_id
-- genre 1 -> many song through song.genre_id
-- listener 1 -> many favorite, playlist and play through listener_id
+- genre 1 -> many song through song.genre_id (Stages 1-3; Stage 4 moves this into
+  song_genre, so song and genre become many-to-many)
+- listener 1 -> many favorite, playlist, play and review through listener_id
 - playlist 1 -> many playlist_song through playlist_song.playlist_id
-- song 1 -> many favorite, playlist_song and play through song_id
+- song 1 -> many favorite, playlist_song, play and song_genre through song_id
+- album 1 -> many review through review.album_id
 
 Practice design:
 - album rows are intentionally scattered; the same artist_id is not grouped together.

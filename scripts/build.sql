@@ -35,3 +35,8 @@ SOURCE migrations/007_create_playlist.sql;
 SOURCE migrations/008_create_playlist_song.sql;
 SOURCE migrations/009_create_play.sql;
 SOURCE scripts/import_stage_3.sql;
+
+-- Stage 4: more genres per song (the pivot), and reviews
+SOURCE migrations/010_song_genre_pivot.sql;
+SOURCE migrations/011_create_review.sql;
+SOURCE scripts/import_stage_4.sql;
