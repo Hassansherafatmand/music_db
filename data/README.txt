@@ -31,6 +31,10 @@ Stage 4 (more genres per song, and reviews), import after migration 010:
 11. review.csv: 90 reviews (listener_id + album_id, 1 to 5 stars) of 77 albums;
     15 have no text (empty -> NULL), and 7 listeners have none
 
+Passwords (for the website):
+- listener.csv has no passwords. After migration 012, scripts/demo_passwords.sql gives
+  every practice listener the same demo password: music330
+
 Relationships:
 - artist 1 -> many album through album.artist_id
 - album 1 -> many song through song.album_id

@@ -40,3 +40,7 @@ SOURCE scripts/import_stage_3.sql;
 SOURCE migrations/010_song_genre_pivot.sql;
 SOURCE migrations/011_create_review.sql;
 SOURCE scripts/import_stage_4.sql;
+
+-- The website (after Stage 4): listeners log in with a password
+SOURCE migrations/012_add_listener_password.sql;
+SOURCE scripts/demo_passwords.sql;
