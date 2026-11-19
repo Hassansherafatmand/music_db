@@ -1,33 +1,33 @@
 # music_db: design
 
-> A small music website where listeners browse artists, albums and songs, and save
-> their own favorite songs and playlists.
+> A small music website where listeners browse artists, albums and songs, ♥ the songs
+> they love, build playlists, and review albums.
 
-This document explains the system as it is now: the website, the parts around the
-database, the tables, and how the database grows in 4 stages.
+This document explains the system as it is now: the parts around the database, the
+tables, and how the database grows in 4 stages. The website itself is explained in
+[app.md](app.md).
 
 ---
 
 ## 1. The system
 
-The **website is imaginary**: it is designed and drawn, but not built. Everything that
-touches the database is **real** and lives in this repo.
+Everything is **real** and lives in this repo. The website was built after Stage 4 (the
+stage files show the plan at each stage, when the website was still only drawn).
 
-| Part | From stage | Real or imaginary | What it does with the data |
-|---|---|---|---|
-| Listener website | 1 | imaginary | browse and search music; sign up; ♥ a song; make playlists; press Play; write a review |
-| API server | 1 | imaginary | gets requests from the website and the admin page, and runs the SQL |
-| MySQL database `music_db` | 1 | **real** | stores everything |
-| Import scripts | 1 | **real** | load the CSV files in `data/` into the tables (one script per stage) |
-| Admin page | 2 | imaginary | adds artists, albums and songs; from Stage 4 also sets a song's genres |
-| Nightly top-songs job | 3 | **real** (a SQL file, run by hand) | reads yesterday's plays and makes each listener's top songs |
-| Email service | 3 | outside service (imaginary) | sends each listener their top songs |
+| Part | Real? | What it does with the data |
+|---|---|---|
+| Listener website (`web/`) | **real**, Python + Flask | browse and search music; sign up and log in; ♥ songs; make playlists; press Play; write reviews; "My top songs" |
+| Web server (Flask) | **real** | gets requests from the browser, runs the SQL from `web/sql/`, and sends back HTML pages |
+| Admin page (`/admin`) | **real**, part of the website | adds artists, albums and songs; sets a song's genres |
+| MySQL database `music_db` | **real** | stores everything |
+| Import scripts | **real** | load the CSV files in `data/` into the tables (one script per stage) |
+| Nightly top-songs job | **real** (a SQL file, run by hand) | finds what each listener played on one day; the website shows the same idea on "My top songs" |
 
-- The API server sits between the website and the database. A browser must never talk
+- The web server sits between the browser and the database. A browser must never talk
   to MySQL directly, because then everyone could see the database password.
-- There is no real sound. Playing music is not part of the system.
-
-Each stage file has a picture of the system at that stage.
+- **No email service.** The plan had an outside email service for the nightly job, but a
+  paid service is not worth it. The "My top songs" page shows the same thing instead.
+- There is no real sound. Pressing Play only saves a row in `play`.
 
 ---
 
@@ -46,9 +46,12 @@ files, run in order), and each finished stage gets a git tag.
 In Stage 4, `song_genre` replaces the column `song.genre_id`, so that one song can have
 more than one genre.
 
+**After Stage 4, the website** needed one more change: migration 012 adds the column
+`listener.password_hash`, so listeners can log in. No new tables, still 11.
+
 ---
 
-## 3. ER diagram (the full design, after Stage 4)
+## 3. ER diagram (the full design: after Stage 4 and migration 012)
 
 Each stage file has the diagram for that stage.
 
@@ -100,6 +103,7 @@ erDiagram
         int listener_id PK
         varchar username
         varchar email
+        varchar password_hash
         date joined_date
     }
     FAVORITE {
@@ -190,6 +194,7 @@ Every `_id` primary key is `AUTO_INCREMENT`: a new row gets the next number by i
 | `listener_id` | PK | |
 | `username` | | required, unique |
 | `email` | | required, unique |
+| `password_hash` | | added by migration 012 for the website: the scrambled password, never the real one. `NULL` = can't log in yet |
 | `joined_date` | | the day they signed up (default: today) |
 
 **`favorite`**: one row for "this listener loves this song".
@@ -331,6 +336,9 @@ The database is in **3NF**. The important choices:
 - **`review` has a two-column key and a `CHECK`.** One listener writes one review for
   each album, and the database refuses stars outside 1 to 5. `stars`, `review_text`
   and `review_date` depend on the whole key: which listener **and** which album (2NF).
+- **`password_hash` lives in `listener`** (migration 012). It depends only on
+  `listener_id`, the key (3NF). It is a hash, not the password: even someone who reads
+  the table can't learn the passwords.
 
 ---
 
@@ -339,6 +347,7 @@ The database is in **3NF**. The important choices:
 | File | What it is |
 |---|---|
 | `docs/design.md` | this document |
+| `docs/app.md` | the website: its pages, the SQL behind them, and how it is kept safe |
 | `docs/stage-1.md` … `stage-4.md` | the diagrams for each stage |
 | `migrations/` | the migrations: small numbered SQL files, run in order |
 | `scripts/import_stage_1.sql` … `import_stage_4.sql` | load each stage's CSV files |
@@ -346,4 +355,6 @@ The database is in **3NF**. The important choices:
 | `scripts/build.sql` | builds the whole database from zero, stage by stage |
 | `queries/showcase.sql` | the review feature from start to end: `INSERT`, a join with `WHERE`, `GROUP BY`, `DELETE` |
 | `queries/test_constraints.sql` | 7 statements that **must fail**, one for each kind of constraint |
+| `scripts/demo_passwords.sql` | gives every practice listener the demo password `music330` |
+| `web/` | the website (Python + Flask): see [app.md](app.md) |
 | `data/` | made-up practice data (CSV files), generated with AI |
