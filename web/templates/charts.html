@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Charts{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">Charts</span>
+    <h1>What music_db is <span class="gradient-text">listening to</span></h1>
+    <p>Every chart here is one SQL query with a window function (<code>RANK()</code>, <code>ROW_NUMBER()</code>, <code>SUM() OVER</code>) or a CTE (<code>WITH</code>). Open “See the SQL” under each one.</p>
+  </div>
+</div>
+
+<section class="card">
+  <div class="section-head" style="margin-bottom:6px">
+    <div><h2>Plays per day</h2><p>The last 30 days. The orange line is the running total: <code>SUM(plays) OVER (ORDER BY day)</code>.</p></div>
+  </div>
+  {% set total = days[-1].running_total if days else 0 %}
+  <div class="days days-big" role="img" aria-label="Plays per day">
+    {% for d in days %}
+      <div class="day-col {{ 'zero' if not d.plays }}" title="{{ d.day|nice_date }}: {{ d.plays }} plays ({{ d.running_total|thousands }} so far)">
+        <i style="height: {{ (d.plays / busiest_day * 100)|round(1) if busiest_day else 0 }}%"></i>
+        <b class="run" style="bottom: {{ (d.running_total / total * 100)|round(1) if total else 0 }}%"></b>
+      </div>
+    {% endfor %}
+  </div>
+  {% if days %}<div class="days-axis"><span>{{ days[0].day|nice_date }}</span><span>{{ total|thousands }} plays in 30 days</span><span>{{ days[-1].day|nice_date }}</span></div>{% endif %}
+  {{ ui.sql_box(sql.plays_per_day, "See the SQL (a recursive CTE + a running total)") }}
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <div><h2>Top 3 in every genre</h2><p>Plays counted per genre, then <code>RANK() OVER (PARTITION BY genre_id ORDER BY plays DESC)</code>. A tie shares a place.</p></div>
+  </div>
+  <div class="genre-charts">
+    {% for (genre_id, genre_name), rows in per_genre.items() %}
+      <article class="genre-chart" style="--h: {{ genre_id|hue }}">
+        <h3><a href="{{ url_for('catalog.genre', genre_id=genre_id) }}">{{ genre_name }}</a></h3>
+        <ol>
+          {% for r in rows %}
+            <li>
+              <span class="place">{{ r.place }}</span>
+              <a href="{{ url_for('catalog.album', album_id=r.album_id) }}#song-{{ r.song_id }}">{{ ui.cover(r.album_id, r.album_name, "tiny") }}</a>
+              <div class="meta"><b>{{ r.song_name|or_untitled }}</b><span>{{ r.artist_name }}</span></div>
+              <small>{{ r.plays }} ▶</small>
+            </li>
+          {% endfor %}
+        </ol>
+      </article>
+    {% endfor %}
+  </div>
+  {{ ui.sql_box(sql.top_songs_per_genre, "See the SQL (CTEs + RANK)") }}
+</section>
+
+<div class="split section">
+  <section>
+    <div class="section-head">
+      <div><h2>The most loved album of each decade</h2><p><code>ROW_NUMBER() OVER (PARTITION BY decade …)</code>, and number 1 wins.</p></div>
+    </div>
+    <ol class="decades">
+      {% for d in decades %}
+        <li>
+          <span class="decade">{{ d.decade|int }}s</span>
+          <a href="{{ url_for('catalog.album', album_id=d.album_id) }}">{{ ui.cover(d.album_id, d.album_name, "tiny") }}</a>
+          <div class="meta"><b><a href="{{ url_for('catalog.album', album_id=d.album_id) }}">{{ d.album_name|or_untitled }}</a></b><span>{{ d.artist_name }} · {{ d.release_year }}</span></div>
+          <small>{{ d.loves }} ♥</small>
+        </li>
+      {% endfor %}
+    </ol>
+    {{ ui.sql_box(sql.best_album_per_decade, "See the SQL (ROW_NUMBER)") }}
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div><h2>Genres by plays</h2><p>Each genre's share: <code>COUNT(*) / SUM(COUNT(*)) OVER ()</code>.</p></div>
+    </div>
+    <div class="card">
+      <div class="genre-bars">
+        {% for gr in shares %}
+          <div class="genre-bar"><a href="{{ url_for('catalog.genre', genre_id=gr.genre_id) }}">{{ gr.genre_name }}</a><span class="track-bg"><i style="--h: {{ gr.genre_id|hue }}; width: {{ (gr.percent / shares[0].percent * 100)|round(1) }}%"></i></span><b>{{ gr.percent }}%</b></div>
+        {% endfor %}
+      </div>
+    </div>
+    {{ ui.sql_box(sql.genre_share, "See the SQL (a window over GROUP BY)") }}
+  </section>
+</div>
+
+{% endblock %}

@@ -13,6 +13,12 @@ VALUES (%(listener_id)s, %(song_id)s);
 DELETE FROM favorite
 WHERE listener_id = %(listener_id)s AND song_id = %(song_id)s;
 
+-- name: is_favorite
+-- Do I ♥ this song? (One row if yes, no row if no.)
+SELECT 1 AS yes
+FROM favorite
+WHERE listener_id = %(listener_id)s AND song_id = %(song_id)s;
+
 -- name: favorites_of_listener
 -- My favorites page: every song I ♥, newest first, with album and artist.
 SELECT s.song_id, s.song_name, s.duration_seconds, s.streams,
@@ -92,6 +98,15 @@ WHERE ps.playlist_id = %(playlist_id)s
 GROUP BY ps.position, ps.added_date, s.song_id, s.song_name, s.duration_seconds,
          s.streams, a.album_id, a.album_name, ar.artist_id, ar.artist_name
 ORDER BY ps.position;
+
+-- name: lock_my_playlist
+-- Lock my playlist's row until the transaction ends (FOR UPDATE), and check that it
+-- is mine. If two browsers change the same playlist at the same time, the second one
+-- waits here until the first is finished. So both can't take the same next position.
+SELECT playlist_id
+FROM playlist
+WHERE playlist_id = %(playlist_id)s AND listener_id = %(listener_id)s
+FOR UPDATE;
 
 -- name: next_position
 -- The place after the last song (1 for an empty playlist).

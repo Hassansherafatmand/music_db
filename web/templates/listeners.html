@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Listeners{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">The community</span>
+    <h1>Listeners</h1>
+    <p>Everyone on music_db has their own taste. The “top genre” is not saved anywhere: a window function, <code>ROW_NUMBER() OVER (PARTITION BY listener_id …)</code>, finds it from each listener's ♥.</p>
+  </div>
+</div>
+
+{{ ui.filters(fields, sort, sort_options) }}
+{{ ui.active_filters(fields) }}
+{{ ui.count_line(pages, "listeners") }}
+
+{% if listeners %}
+  <div class="grid grid-people">
+    {% for p in listeners %}
+      <a class="person-card" href="{{ url_for('community.profile', username=p.username) }}">
+        {{ ui.user_avatar(p.listener_id, p.username, "big") }}
+        <div class="person-main">
+          <h3>{{ p.username }}{% if current_user and current_user.id == p.listener_id %} <span class="pill">you</span>{% endif %}</h3>
+          <p class="{{ 'hot' if sort == 'newest' }}">joined {{ p.joined_date|nice_date }}</p>
+          {% if p.top_genre %}<span class="chip" style="--h: {{ p.top_genre_id|hue }}">{{ p.top_genre }} fan</span>{% else %}<span class="faint" style="font-size:.8rem">no favorites yet</span>{% endif %}
+        </div>
+        <div class="person-stats">
+          <span class="{{ 'hot' if sort == 'favorites' }}" title="Favorites">{{ ui.icon("heart") }} {{ p.favorite_count }}</span>
+          <span class="{{ 'hot' if sort == 'plays' }}" title="Plays">{{ ui.icon("play") }} {{ p.play_count }}</span>
+          <span class="{{ 'hot' if sort == 'reviews' }}" title="Reviews">{{ ui.icon("star") }} {{ p.review_count }}</span>
+          <span class="{{ 'hot' if sort == 'comments' }}" title="Comments">{{ ui.icon("message") }} {{ p.comment_count }}</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+  {{ ui.pagination(pages) }}
+{% else %}
+  {% call ui.empty("👋", "No listeners match", "Try another genre or year.") %}<a class="btn btn-soft" href="{{ request.path }}">Clear the filters</a>{% endcall %}
+{% endif %}
+
+{% endblock %}

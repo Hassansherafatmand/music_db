@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Lab: Security{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow"><a href="{{ url_for('lab.index') }}">The Lab</a> · Security</span>
+    <h1>Why the attacks fail</h1>
+    <p>Five ways the website protects the database and the listeners.</p>
+  </div>
+</div>
+
+<section class="card lab-step" id="injection">
+  <span class="step-num">1</span>
+  <div>
+    <h2>SQL injection</h2>
+    <p class="muted">An attacker types SQL into a form, hoping the website glues it into its own SQL. Try it: this is the login's username box.</p>
+    <form class="new-playlist" method="get" action="{{ url_for('lab.security') }}#injection" style="margin:16px 0">
+      <label class="sr-only" for="username">Username</label>
+      <input class="input mono" id="username" name="username" value="{{ typed }}" maxlength="80">
+      <button class="btn btn-primary">Try it</button>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('lab.security', username=attack) }}#injection">The classic attack</a>
+    </form>
+
+    <div class="compare">
+      <div class="compare-side bad">
+        <h3>{{ ui.icon("lock") }} A careless website</h3>
+        <p>It glues the typed text into the SQL:</p>
+        <pre>{{ glued }}</pre>
+        {% if "'" in typed %}
+          <p class="verdict bad">The <code>'</code> closes the text early. Then <code>OR '1'='1'</code> is true for every row, and <code>--</code> turns the rest into a comment. MySQL would return <b>every listener</b>, and the attacker is logged in as the first one.</p>
+        {% else %}
+          <p class="verdict">This text has no <code>'</code>, so it can't break out of the quotes. Try the classic attack.</p>
+        {% endif %}
+        <small class="faint">This SQL is only shown here. music_db never sends it to MySQL.</small>
+      </div>
+      <div class="compare-side good">
+        <h3>{{ ui.icon("shield") }} music_db</h3>
+        <p>The SQL has a parameter. The typed text is sent <b>separately</b>:</p>
+        <pre>{{ safe_sql }}</pre>
+        <div class="xray-params"><span>Parameter:</span><code>username = '{{ typed }}'</code></div>
+        <p class="verdict good">MySQL compares the whole text with the usernames, as plain text. Result: <b>{{ found|length|plural("row") }}</b>{% if found %} ({{ found[0].username }}){% else %}: nobody has that username, so nobody is logged in{% endif %}.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="card lab-step">
+  <span class="step-num">2</span>
+  <div>
+    <h2>The sort menu is a fixed list</h2>
+    <p class="muted">A parameter can't be a column name, so <code>ORDER BY</code> can't use one. Instead, the website only accepts sorts from a fixed list in the SQL file: <code>{{ sorts|join("</code>, <code>")|safe }}</code>. Anything else is ignored.</p>
+    <div class="pill-row" style="justify-content:flex-start;margin-top:14px">
+      <a class="btn btn-soft btn-sm btn-wrap" href="{{ url_for('catalog.songs', sort='name') }}">/songs?sort=name {{ ui.icon("arrow") }} sorted by name</a>
+      <a class="btn btn-soft btn-sm btn-wrap" href="{{ url_for('catalog.songs') }}?sort=song_name;DROP%20TABLE%20song">/songs?sort=…;DROP TABLE song {{ ui.icon("arrow") }} ignored</a>
+    </div>
+  </div>
+</section>
+
+<section class="card lab-step">
+  <span class="step-num">3</span>
+  <div>
+    <h2>Passwords are never saved</h2>
+    <p class="muted">The database keeps only a <b>hash</b>: a scrambled version that can't be turned back. At login, the website hashes what you type and compares. Here is what the <code>listener</code> table has for <code>{{ demo.username }}</code> (password <code>music330</code>):</p>
+    <pre class="wrap">{{ demo.password_hash }}</pre>
+    <p class="muted">Hashing the same password twice gives two different hashes, because each one gets a random <b>salt</b> (the text between the two <code>$</code> signs). So two listeners with the same password don't have the same hash:</p>
+    {% for h in fresh_hashes %}<pre class="wrap">{{ h }}</pre>{% endfor %}
+    <p class="muted"><code>scrypt</code> is also slow on purpose, so guessing millions of passwords takes too long.</p>
+  </div>
+</section>
+
+<section class="card lab-step">
+  <span class="step-num">4</span>
+  <div>
+    <h2>Form tokens (CSRF)</h2>
+    <p class="muted">Another website could hide a form that posts to music_db, using your login. So every form here has a secret token that only our pages know. Your token starts with <code>{{ token_start }}…</code>. A form without the right token gets “400 Bad Request”.</p>
+  </div>
+</section>
+
+<section class="card lab-step">
+  <span class="step-num">5</span>
+  <div>
+    <h2>A MySQL user with few rights</h2>
+    <p class="muted">The website doesn't log in to MySQL as root. Its user can read and change rows, but it can't drop or change tables. Even a bug can't delete a table. <code>SHOW GRANTS</code> says:</p>
+    {% for line in grants %}<pre class="wrap">{{ line }}</pre>{% endfor %}
+    <p class="muted">And the playlists are private: their SQL always checks the owner, <code>WHERE playlist_id = … AND listener_id = &lt;me&gt;</code>.</p>
+  </div>
+</section>
+
+{% endblock %}

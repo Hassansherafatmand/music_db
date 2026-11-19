@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Songs{% endblock %}
+{% block content %}
+
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">The catalog</span>
+    <h1>Songs</h1>
+    <p>Every song on music_db. Choose filters and a sort: each one changes the SQL. Open <b>“Under the hood”</b> at the bottom to see the query this page just ran.</p>
+  </div>
+  <a class="btn btn-soft btn-sm" href="{{ url_for('catalog.genres') }}">{{ ui.icon("tag") }} All genres</a>
+</div>
+
+{{ ui.filters(fields, sort, sort_options) }}
+{{ ui.active_filters(fields) }}
+{{ ui.count_line(pages, "songs") }}
+
+{% if songs %}
+  <div class="tracks-head tracks-head-wide" aria-hidden="true"><span></span><span>Title</span><span>♥</span><span>▶</span><span>{{ ui.icon("clock") }}</span><span></span></div>
+  <ol class="tracks tracks-wide">
+    {% for s in songs %}
+      <li class="track" id="song-{{ s.song_id }}">
+        <div class="track-lead">{{ ui.cover(s.album_id, s.album_name, "tiny") }}{{ ui.play_button(s) }}</div>
+        <div class="track-main">
+          <span class="track-title {{ 'untitled' if not s.song_name }}">{{ s.song_name|or_untitled }}</span>
+          <span class="track-sub">
+            <a href="{{ url_for('catalog.artist', artist_id=s.artist_id) }}">{{ s.artist_name }}</a>{% if s.origin_state %} <span class="faint">({{ s.origin_state }})</span>{% endif %}
+            <span class="faint">·</span>
+            <a href="{{ url_for('catalog.album', album_id=s.album_id) }}">{{ s.album_name|or_untitled }}</a> <span class="faint">{{ s.release_year }}</span>
+            {% if s.genres %}<span class="chips">{% for gid, gname in s.genres|genre_list %}<a class="chip" style="--h: {{ gid|hue }}" href="{{ url_with(genre=gid, page=none) }}">{{ gname }}</a>{% endfor %}</span>{% endif %}
+          </span>
+        </div>
+        <span class="track-count {{ 'hot' if sort == 'loved' }}" title="Listeners who ♥ it">{{ s.love_count }}</span>
+        <span class="track-count {{ 'hot' if sort == 'played' }}" title="Plays on music_db">{{ s.play_count }}</span>
+        <span class="track-time">{{ s.duration_seconds|duration }}</span>
+        <div class="track-actions">{{ ui.love_button(s) }}{{ ui.playlist_menu(s) }}</div>
+      </li>
+    {% endfor %}
+  </ol>
+  {{ ui.pagination(pages) }}
+{% else %}
+  {% call ui.empty("🎧", "No songs match", "Try fewer filters.") %}<a class="btn btn-soft" href="{{ request.path }}">Clear the filters</a>{% endcall %}
+{% endif %}
+
+{% endblock %}

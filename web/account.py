@@ -1,4 +1,4 @@
-"""Sign up, log in and log out."""
+"""Sign up, log in, log out, and "My account" (change email or password, delete it)."""
 
 import re
 
@@ -6,7 +6,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from . import db
-from .security import safe_next
+from .security import current_listener_id, login_required, safe_next
 
 bp = Blueprint("account", __name__)
 
@@ -88,4 +88,70 @@ def login():
 def logout():
     session.clear()
     flash("You are logged out. See you soon!", "info")
+    return redirect(url_for("catalog.home"))
+
+
+# ---------------------------------------------------------------- my account
+
+def _password_ok(typed):
+    row = db.one("account.my_password_hash", listener_id=current_listener_id())
+    return bool(row and row["password_hash"] and check_password_hash(row["password_hash"], typed))
+
+
+@bp.get("/me/account")
+@login_required
+def my_account():
+    me = current_listener_id()
+    return render_template("account.html",
+                           me=db.one("account.my_account", listener_id=me),
+                           goes=db.one("account.what_goes_too", listener_id=me))
+
+
+@bp.post("/me/account/email")
+@login_required
+def change_email():
+    email = request.form.get("email", "").strip().lower()
+    if not EMAIL.match(email) or len(email) > 100:
+        flash("Please type a real email address.", "error")
+    else:
+        try:
+            db.execute("account.update_email", email=email, listener_id=current_listener_id())
+            flash("Your email is changed.", "success")
+        except db.IntegrityError as err:
+            if not db.duplicate_key(err):
+                raise
+            flash("There is already an account with this email.", "error")  # UNIQUE (email)
+    return redirect(url_for("account.my_account"))
+
+
+@bp.post("/me/account/password")
+@login_required
+def change_password():
+    new = request.form.get("new_password", "")
+    if not _password_ok(request.form.get("password", "")):
+        flash("Your current password is not right.", "error")
+    elif len(new) < 8:
+        flash("The new password needs at least 8 characters.", "error")
+    elif new != request.form.get("new_password2", ""):
+        flash("The two new passwords are not the same.", "error")
+    else:
+        db.execute("account.update_password", password_hash=generate_password_hash(new),
+                   listener_id=current_listener_id())
+        flash("Your password is changed.", "success")
+    return redirect(url_for("account.my_account"))
+
+
+@bp.post("/me/account/delete")
+@login_required
+def delete_account():
+    if not _password_ok(request.form.get("password", "")):
+        flash("That password is not right, so nothing was deleted.", "error")
+        return redirect(url_for("account.my_account") + "#delete")
+    username = session.get("username")
+    with db.transaction():
+        # The audit trigger writes who did it. ON DELETE CASCADE deletes the rest.
+        db.execute("account.set_audit_actor", actor=f"{username} (deleted their own account)")
+        db.execute("account.delete_listener", listener_id=current_listener_id())
+    session.clear()
+    flash("Your account and everything in it are deleted. Goodbye! 👋", "info")
     return redirect(url_for("catalog.home"))

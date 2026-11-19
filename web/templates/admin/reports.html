@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin · Reports{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+    <h1 style="margin-top:12px">Reports</h1>
+    <p>Questions about the website, each answered by one SQL query. Every report shows its SQL.</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.dashboard') }}">{{ ui.icon("arrow") }} Back to the admin page</a>
+</div>
+
+<nav class="report-nav">
+  {% for r in reports %}<a href="#{{ r.key }}">{{ r.title }}</a>{% endfor %}
+</nav>
+
+{% for r in reports %}
+  <section class="card report" id="{{ r.key }}">
+    <div class="report-head">
+      <div>
+        <h2>{{ r.title }}</h2>
+        <p class="muted">{{ r.question }}</p>
+      </div>
+      <span class="pill technique">{{ r.technique }}</span>
+    </div>
+    {{ ui.sql_box(r.sql) }}
+    {% if r.rows %}
+      <p class="count-line">{{ r.total|plural("answer") }}{% if r.total > r.rows|length %}, showing {{ r.rows|length }}{% endif %}</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr>{% for col in r.rows[0].keys() if col != "total_rows" %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for row in r.rows %}
+              <tr>{% for col, value in row.items() if col != "total_rows" %}<td>{{ value|thousands if value is number and col in ("streams", "album_average", "avg_streams") else value }}</td>{% endfor %}</tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="faint" style="margin-top:12px">No answers: nobody matches.</p>
+    {% endif %}
+  </section>
+{% endfor %}
+
+{% endblock %}

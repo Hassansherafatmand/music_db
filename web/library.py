@@ -65,6 +65,14 @@ def _owned_playlist(playlist_id):
     return found
 
 
+def _lock(playlist_id):
+    """Inside a transaction: lock my playlist's row (SELECT ... FOR UPDATE).
+    Another browser that changes the same playlist now waits until we are finished."""
+    if db.one("library.lock_my_playlist", playlist_id=playlist_id,
+              listener_id=current_listener_id()) is None:
+        abort(404)
+
+
 def _clean_name(raw):
     name = " ".join((raw or "").split())  # no extra spaces
     if not 1 <= len(name) <= 50:
@@ -131,6 +139,7 @@ def add_to_playlist(playlist_id):
     song_id = request.form.get("song_id", type=int)
     try:
         with db.transaction():
+            _lock(playlist_id)  # so two browsers can't take the same next position
             position = db.one("library.next_position", playlist_id=playlist_id)["next_position"]
             db.execute("library.add_to_playlist",
                        playlist_id=playlist_id, song_id=song_id, position=position)
@@ -148,8 +157,8 @@ def add_to_playlist(playlist_id):
 @bp.post("/playlists/<int:playlist_id>/songs/<int:song_id>/remove")
 @login_required
 def remove_from_playlist(playlist_id, song_id):
-    _owned_playlist(playlist_id)
     with db.transaction():
+        _lock(playlist_id)
         row = db.one("library.position_of_song", playlist_id=playlist_id, song_id=song_id)
         if row:
             db.execute("library.remove_from_playlist", playlist_id=playlist_id, song_id=song_id)
@@ -161,9 +170,9 @@ def remove_from_playlist(playlist_id, song_id):
 @bp.post("/playlists/<int:playlist_id>/songs/<int:song_id>/move")
 @login_required
 def move_in_playlist(playlist_id, song_id):
-    _owned_playlist(playlist_id)
     step = -1 if request.form.get("direction") == "up" else 1
     with db.transaction():
+        _lock(playlist_id)
         row = db.one("library.position_of_song", playlist_id=playlist_id, song_id=song_id)
         if row:
             here_pos = row["position"]

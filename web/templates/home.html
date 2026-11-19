@@ -14,7 +14,8 @@
       <button class="btn btn-primary">Search</button>
     </form>
     <div class="hero-actions">
-      <a class="btn btn-ghost" href="{{ url_for('catalog.artists') }}">{{ ui.icon("mic") }} Browse artists</a>
+      <a class="btn btn-ghost" href="{{ url_for('catalog.songs') }}">{{ ui.icon("music") }} Browse songs</a>
+      <a class="btn btn-ghost" href="{{ url_for('catalog.charts') }}">{{ ui.icon("trophy") }} Charts</a>
       {% if current_user %}
         <a class="btn btn-ghost" href="{{ url_for('library.top_songs') }}">{{ ui.icon("chart") }} My top songs</a>
       {% else %}
@@ -40,7 +41,8 @@
 <div class="split section">
   <section>
     <div class="section-head">
-      <div><h2>Most played on music_db</h2><p>Counted from every ▶ press in the <code>play</code> table.</p></div>
+      <div><h2>Most played</h2><p>Counted from every ▶ press in the <code>play</code> table.</p></div>
+      <a class="btn btn-soft btn-sm" href="{{ url_for('catalog.songs', sort='played') }}">All {{ ui.icon("arrow") }}</a>
     </div>
     {% set top_plays = most_played[0].plays if most_played else 1 %}
     <ol class="ranked card" style="padding:8px">
@@ -60,7 +62,55 @@
 
   <section>
     <div class="section-head">
-      <div><h2>Top rated albums</h2><p>The best average stars (2+ reviews).</p></div>
+      <div><h2>Most loved</h2><p>The most ♥, from the view <code>song_popularity</code>.</p></div>
+      <a class="btn btn-soft btn-sm" href="{{ url_for('catalog.songs', sort='loved') }}">All {{ ui.icon("arrow") }}</a>
+    </div>
+    {% set top_loves = most_loved[0].love_count if most_loved else 1 %}
+    <ol class="ranked card" style="padding:8px">
+      {% for s in most_loved %}
+        <li>
+          <a href="{{ url_for('catalog.album', album_id=s.album_id) }}#song-{{ s.song_id }}">{{ ui.cover(s.album_id, s.album_name, "tiny") }}</a>
+          <div class="meta">
+            <b>{{ s.song_name|or_untitled }}</b>
+            <span><a href="{{ url_for('catalog.artist', artist_id=s.artist_id) }}">{{ s.artist_name }}</a> · {{ s.album_name|or_untitled }}</span>
+          </div>
+          <span class="track-plays loves">{{ s.love_count }} ♥</span>
+          <span class="bar"><i style="width: {{ (s.love_count / top_loves * 100)|round(1) }}%"></i></span>
+        </li>
+      {% endfor %}
+    </ol>
+  </section>
+</div>
+
+<div class="split section">
+  <section>
+    <div class="section-head">
+      <div><h2>What's new</h2><p>Four tables in one list with <code>UNION ALL</code>. Nothing is stored for it.</p></div>
+      <a class="btn btn-soft btn-sm" href="{{ url_for('community.listeners') }}">Listeners {{ ui.icon("arrow") }}</a>
+    </div>
+    <ul class="feed card">
+      {% for e in feed %}
+        <li class="feed-{{ e.kind }}">
+          <a href="{{ url_for('community.profile', username=e.username) }}">{{ ui.user_avatar(e.listener_id, e.username) }}</a>
+          <div class="meta">
+            <p>
+              <a class="who" href="{{ url_for('community.profile', username=e.username) }}">{{ e.username }}</a>
+              {% if e.kind == "loved" %}<span class="what">♥ loved</span> <a href="{{ url_for('catalog.album', album_id=e.album_id) }}#song-{{ e.item_id }}">{{ e.item_name|or_untitled }}</a>
+              {% elif e.kind == "reviewed" %}<span class="what">reviewed</span> <a href="{{ url_for('catalog.album', album_id=e.album_id) }}#reviews">{{ e.item_name|or_untitled }}</a> {{ ui.stars(e.stars) }}
+              {% elif e.kind == "commented" %}<span class="what">commented on a review of</span> <a href="{{ url_for('catalog.album', album_id=e.album_id) }}#reviews">{{ e.item_name|or_untitled }}</a>
+              {% else %}<span class="what">joined music_db</span> 👋{% endif %}
+            </p>
+            <small>{{ e.happened_at|ago }}</small>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div><h2>Top rated albums</h2><p>Best average stars, 3+ reviews (the view <code>album_rating</code>).</p></div>
+      <a class="btn btn-soft btn-sm" href="{{ url_for('catalog.albums', sort='rated') }}">All {{ ui.icon("arrow") }}</a>
     </div>
     <div class="card" style="padding:8px">
       <ol class="ranked">
@@ -81,8 +131,24 @@
 
 <section class="section">
   <div class="section-head">
+    <div><h2>Most loved albums</h2><p>The ♥ of all their songs added up (<code>SUM</code>).</p></div>
+    <a class="btn btn-soft btn-sm" href="{{ url_for('catalog.albums', sort='loved') }}">All albums {{ ui.icon("arrow") }}</a>
+  </div>
+  <div class="grid grid-albums">
+    {% for a in loved_albums %}
+      <a class="album-card" href="{{ url_for('catalog.album', album_id=a.album_id) }}">
+        {{ ui.cover(a.album_id, a.album_name) }}
+        <h3>{{ a.album_name|or_untitled }}</h3>
+        <p>{{ a.artist_name }} · {{ a.loves }} ♥</p>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
     <div><h2>Fresh releases</h2><p>The newest albums in the catalog.</p></div>
-    <a class="btn btn-soft btn-sm" href="{{ url_for('catalog.artists') }}">All artists {{ ui.icon("arrow") }}</a>
+    <a class="btn btn-soft btn-sm" href="{{ url_for('catalog.albums', sort='newest') }}">All albums {{ ui.icon("arrow") }}</a>
   </div>
   <div class="grid grid-albums">
     {% for a in newest %}

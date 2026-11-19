@@ -25,6 +25,16 @@
   "user": '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   "arrow": '<path d="M5 12h14M13 6l6 6-6 6"/>',
   "star": '<polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/>',
+  "flask": '<path d="M9 3h6M10 3v6L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9V3"/><path d="M7 15h10"/>',
+  "users": '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>',
+  "trophy": '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+  "message": '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/>',
+  "lock": '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  "zap": '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  "monitor": '<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  "filter": '<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
+  "settings": '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  "file": '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
 } -%}
 <svg class="icon {{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{{ paths[name]|safe }}</svg>
@@ -138,6 +148,7 @@
   <span class="track-streams" title="Streams on other music services">{{ s.streams|compact if s.streams is not none }}</span>
   <span class="track-time">{{ s.duration_seconds|duration }}</span>
   <div class="track-actions">
+    {% if is_admin %}<a class="icon-btn" href="{{ url_for('admin.edit_song', song_id=s.song_id) }}" title="Edit this song (admin)">{{ icon("edit") }}<span class="sr-only">Edit</span></a>{% endif %}
     {{ love_button(s) }}
     {% if playlist %}
       <form class="inline" method="post" action="{{ url_for('library.move_in_playlist', playlist_id=playlist.playlist_id, song_id=s.song_id) }}">
@@ -171,4 +182,85 @@
   <p>{{ text }}</p>
   {{ caller() if caller }}
 </div>
+{%- endmacro %}
+
+
+{# ------------------------------------------------------------ listeners #}
+{% macro user_avatar(listener_id, username, cls="") -%}
+<span class="uavatar {{ cls }}" style="--h: {{ listener_id|hue }}" aria-hidden="true">{{ (username or "?")[:2]|upper }}</span>
+{%- endmacro %}
+
+{% macro user_link(listener_id, username) -%}
+<a class="user-link" href="{{ url_for('community.profile', username=username) }}">{{ user_avatar(listener_id, username) }}<span>{{ username }}</span></a>
+{%- endmacro %}
+
+{# ------------------------------------------------------------ list pages #}
+{# fields: a list of dicts: {name, label, all, options: [(value, text), ...], current}.
+   Changing a menu sends the form at once (app.js); "Apply" is for browsers without JS. #}
+{% macro filters(fields, sort, sort_options) -%}
+<form class="filters" method="get" action="{{ request.path }}">
+  <span class="filters-icon" aria-hidden="true">{{ icon("filter") }}</span>
+  {% for f in fields %}
+    <label class="filter">
+      <span>{{ f.label }}</span>
+      <select class="select select-sm" name="{{ f.name }}">
+        <option value="">{{ f.all }}</option>
+        {% for value, text in f.options %}
+          <option value="{{ value }}" {{ "selected" if f.current is not none and f.current|string == value|string }}>{{ text }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  {% endfor %}
+  <label class="filter filter-sort">
+    <span>Sort by</span>
+    <select class="select select-sm" name="sort">
+      {% for key, text in sort_options %}<option value="{{ key }}" {{ "selected" if key == sort }}>{{ text }}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="btn btn-soft btn-sm apply">Apply</button>
+</form>
+{%- endmacro %}
+
+{# The filters that are on, as chips. × takes one away. #}
+{% macro active_filters(fields) -%}
+{% set active = fields|selectattr("current")|list %}
+{% if active %}
+  <div class="active-filters">
+    {% for f in active %}
+      {% set match = f.options|selectattr("0", "equalto", f.current)|first %}
+      <a class="chip-filter" href="{{ url_with(**{f.name: none, 'page': none}) }}" title="Remove this filter">{{ f.label }}: <b>{{ match[1] if match else f.current }}</b><span aria-hidden="true">×</span></a>
+    {% endfor %}
+    <a class="link" href="{{ request.path }}{{ '?sort=' ~ request.args.sort if request.args.get('sort') }}">Clear all</a>
+  </div>
+{% endif %}
+{%- endmacro %}
+
+{# "Showing 1–25 of 1,219 songs" and the LIMIT/OFFSET that made this page. #}
+{% macro count_line(pages, noun) -%}
+<p class="count-line">
+  {% if pages.total %}Showing <b>{{ pages.first_row|thousands }}–{{ pages.last_row|thousands }}</b> of <b>{{ pages.total|thousands }}</b> {{ noun }}{% else %}No {{ noun }} match these filters{% endif %}
+  <code>LIMIT {{ pages.per_page }} OFFSET {{ (pages.page - 1) * pages.per_page }}</code>
+</p>
+{%- endmacro %}
+
+{% macro pagination(pages) -%}
+{% if pages.count > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if pages.page > 1 %}
+      <a class="pager-btn" href="{{ url_with(page=pages.page - 1 if pages.page > 2 else none) }}" rel="prev">‹ Previous</a>
+    {% else %}<span class="pager-btn disabled">‹ Previous</span>{% endif %}
+    {% for n in pages.numbers %}
+      {% if n is none %}<span class="pager-gap">…</span>
+      {% else %}<a class="pager-num {{ 'current' if n == pages.page }}" href="{{ url_with(page=n if n > 1 else none) }}" {{ 'aria-current=page' if n == pages.page }}>{{ n }}</a>{% endif %}
+    {% endfor %}
+    {% if pages.page < pages.count %}
+      <a class="pager-btn" href="{{ url_with(page=pages.page + 1) }}" rel="next">Next ›</a>
+    {% else %}<span class="pager-btn disabled">Next ›</span>{% endif %}
+  </nav>
+{% endif %}
+{%- endmacro %}
+
+{# ------------------------------------------------------------ show the SQL #}
+{% macro sql_box(sql, label="See the SQL") -%}
+<details class="sqlbox"><summary>{{ icon("database") }} {{ label }}</summary><pre>{{ sql }}</pre></details>
 {%- endmacro %}

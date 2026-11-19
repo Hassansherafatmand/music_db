@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin · Edit {{ song.song_name|or_untitled }}{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+    <h1 style="margin-top:12px">Edit a song</h1>
+    <p>Song #{{ song.song_id }} on {{ song.album_name|or_untitled }} by {{ song.artist_name }}</p>
+  </div>
+  <div class="pill-row">
+    <a class="btn btn-ghost" href="{{ url_for('admin.song_genres', song_id=song.song_id) }}">{{ ui.icon("tag") }} Genres</a>
+    <a class="btn btn-ghost" href="{{ url_for('catalog.album', album_id=song.album_id) }}#song-{{ song.song_id }}">{{ ui.icon("disc") }} Album page</a>
+  </div>
+</div>
+
+<div class="admin-grid">
+  <section class="card">
+    <h2>Change</h2>
+    <form class="form" method="post" style="margin-top:14px">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="row-3">
+        <div class="field"><label for="song_name">Name</label><input class="input" id="song_name" name="song_name" maxlength="100" value="{{ song.song_name or '' }}" required></div>
+        <div class="field"><label for="track_number">Track</label><input class="input" id="track_number" name="track_number" type="number" min="1" value="{{ song.track_number }}" required></div>
+        <div class="field"><label for="duration">Length</label><input class="input" id="duration" name="duration" value="{{ song.duration_seconds|duration }}" required></div>
+      </div>
+      <div class="field">
+        <label for="album_id">Album</label>
+        <select class="select" id="album_id" name="album_id" required>
+          {% for a in albums %}<option value="{{ a.album_id }}" {{ "selected" if a.album_id == song.album_id }}>{{ a.artist_name }} · {{ a.album_name|or_untitled }} ({{ a.release_year }})</option>{% endfor %}
+        </select>
+      </div>
+      <button class="btn btn-primary">Save</button>
+    </form>
+  </section>
+
+  <section class="card danger-zone">
+    <h2>Delete</h2>
+    <p class="muted" style="margin:4px 0 14px">What points to this song. <b>RESTRICT</b> rows stop the delete; <b>CASCADE</b> rows are deleted with it.</p>
+    {% set blocked = uses.favorites or uses.playlist_rows or uses.plays %}
+    <div class="table-wrap"><table class="table uses">
+      <thead><tr><th>Table</th><th>Rows</th><th>Foreign key</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr class="{{ 'blocks' if uses.favorites }}"><td><code>favorite</code></td><td><b>{{ uses.favorites }}</b></td><td><code>fk_favorite_song</code></td><td>RESTRICT</td></tr>
+        <tr class="{{ 'blocks' if uses.playlist_rows }}"><td><code>playlist_song</code></td><td><b>{{ uses.playlist_rows }}</b></td><td><code>fk_playlist_song_song</code></td><td>RESTRICT</td></tr>
+        <tr class="{{ 'blocks' if uses.plays }}"><td><code>play</code></td><td><b>{{ uses.plays }}</b></td><td><code>fk_play_song</code></td><td>RESTRICT</td></tr>
+        <tr class="cascades"><td><code>song_genre</code></td><td><b>{{ uses.genres }}</b></td><td><code>fk_song_genre_song</code></td><td>CASCADE</td></tr>
+      </tbody>
+    </table></div>
+    <p class="verdict {{ 'bad' if blocked else 'good' }}">{% if blocked %}MySQL will say no: listeners still use this song. Their history is protected.{% else %}Nothing stops it. MySQL deletes the song and its {{ uses.genres|plural("genre row") }} (CASCADE).{% endif %}</p>
+    <form method="post" action="{{ url_for('admin.delete_song', song_id=song.song_id) }}" onsubmit="return confirm('Try to delete this song?')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-danger">{{ ui.icon("trash") }} Try to delete</button>
+    </form>
+  </section>
+</div>
+
+{% endblock %}

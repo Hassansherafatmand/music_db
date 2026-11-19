@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin · Audit log{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+    <h1 style="margin-top:12px">Audit log</h1>
+    <p>Who deleted what, and when. The website never writes here: <b>triggers</b> in MySQL do it by themselves, <code>AFTER DELETE</code> on <code>listener</code>, <code>artist</code>, <code>album</code> and <code>song</code> (migration 014).</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.dashboard') }}">{{ ui.icon("arrow") }} Back to the admin page</a>
+</div>
+
+<div class="card">
+  {% if rows %}
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>#</th><th>When</th><th>Action</th><th>Table</th><th>Row id</th><th>Details (a copy of the old values)</th><th>Who</th></tr></thead>
+        <tbody>
+          {% for a in rows %}
+            <tr>
+              <td class="faint">{{ a.audit_id }}</td>
+              <td class="nowrap">{{ a.done_at }}</td>
+              <td><span class="pill danger">{{ a.action }}</span></td>
+              <td><code>{{ a.table_name }}</code></td>
+              <td>{{ a.row_id }}</td>
+              <td class="muted">{{ a.details }}</td>
+              <td>{{ a.done_by }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    {% call ui.empty("📜", "Nothing deleted yet", "Delete a listener (or a song nobody uses) and a trigger writes a row here.") %}{% endcall %}
+  {% endif %}
+  <p class="faint" style="margin:14px 0 0;font-size:.86rem">Rows removed by <code>ON DELETE CASCADE</code> don't start triggers in MySQL, so deleting a listener writes one row here, not one row per favorite.</p>
+</div>
+
+{% endblock %}

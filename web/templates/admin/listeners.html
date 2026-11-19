@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin · Listeners{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+    <h1 style="margin-top:12px">Listeners</h1>
+    <p>Every account, with its email (only the admin sees emails). The numbers come from the view <code>listener_activity</code>.</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.dashboard') }}">{{ ui.icon("arrow") }} Back to the admin page</a>
+</div>
+
+<div class="admin-grid">
+  <section class="card wide">
+    <form class="filters" method="get" action="{{ url_for('admin.listeners') }}">
+      <span class="filters-icon" aria-hidden="true">{{ ui.icon("search") }}</span>
+      <label class="filter grow"><span>Username or email</span><input class="input input-sm" name="q" value="{{ words }}" placeholder="like sarah, or @example.com"></label>
+      <label class="filter filter-sort"><span>Sort by</span>
+        <select class="select select-sm" name="sort">{% for key, text in sort_options %}<option value="{{ key }}" {{ "selected" if key == sort }}>{{ text }}</option>{% endfor %}</select>
+      </label>
+      <button class="btn btn-soft btn-sm">Search</button>
+    </form>
+    {{ ui.count_line(pages, "listeners") }}
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>#</th><th>Listener</th><th>Email</th><th>Joined</th><th title="Favorites">♥</th><th title="Playlists">Lists</th><th title="Plays">▶</th><th title="Reviews">★</th><th title="Comments">💬</th><th></th></tr></thead>
+        <tbody>
+          {% for p in listeners %}
+            <tr>
+              <td class="faint">{{ p.listener_id }}</td>
+              <td>{{ ui.user_link(p.listener_id, p.username) }}</td>
+              <td class="muted">{{ p.email }}</td>
+              <td class="nowrap">{{ p.joined_date|nice_date }}</td>
+              <td>{{ p.favorite_count }}</td><td>{{ p.playlist_count }}</td><td>{{ p.play_count }}</td><td>{{ p.review_count }}</td><td>{{ p.comment_count }}</td>
+              <td><a class="btn btn-soft btn-sm" href="{{ url_for('admin.listener', listener_id=p.listener_id) }}">Manage</a></td>
+            </tr>
+          {% else %}
+            <tr><td colspan="10" class="faint">Nobody matches “{{ words }}”.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {{ ui.pagination(pages) }}
+  </section>
+
+  <section class="card" id="add-listener">
+    <h2>Add a listener</h2>
+    <p class="muted" style="margin:4px 0 14px"><code>INSERT INTO listener</code>. <code>UNIQUE</code> refuses a username or email that is taken.</p>
+    <form class="form" method="post" action="{{ url_for('admin.add_listener') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="username">Username</label><input class="input" id="username" name="username" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" required></div>
+      <div class="field"><label for="email">Email</label><input class="input" id="email" name="email" type="email" maxlength="100" required></div>
+      <div class="field"><label for="password">Password</label><input class="input" id="password" name="password" type="password" minlength="8" autocomplete="new-password" required><small>At least 8 characters. Only its hash is saved.</small></div>
+      <button class="btn btn-primary">{{ ui.icon("plus") }} Add listener</button>
+    </form>
+  </section>
+</div>
+
+{% endblock %}

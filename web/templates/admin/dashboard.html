@@ -7,7 +7,7 @@
   <div>
     <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
     <h1 style="margin-top:12px">The admin page</h1>
-    <p>Add music to the catalog. Every form runs an <code>INSERT</code>, and the database's keys and constraints check it.</p>
+    <p>CRUD for the whole website: <b>C</b>reate, <b>R</b>ead, <b>U</b>pdate and <b>D</b>elete music and listeners. The database's keys and constraints check every form.</p>
   </div>
   <form method="post" action="{{ url_for('admin.logout') }}">
     <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
@@ -22,6 +22,28 @@
   <div class="stat"><b class="gradient-text">{{ stats.listeners }}</b><span>listeners</span></div>
   <div class="stat"><b class="gradient-text">{{ stats.plays|thousands }}</b><span>plays</span></div>
 </div>
+
+<div class="admin-links">
+  <a class="admin-link" href="{{ url_for('admin.listeners') }}">{{ ui.icon("users") }}<div><b>Listeners</b><small>search, add, edit, delete</small></div></a>
+  <a class="admin-link" href="{{ url_for('admin.reports') }}">{{ ui.icon("file") }}<div><b>Reports</b><small>6 questions, answered with SQL</small></div></a>
+  <a class="admin-link" href="{{ url_for('admin.audit') }}">{{ ui.icon("shield") }}<div><b>Audit log</b><small>{{ audit.entries|plural("entry") }}{% if audit.last_entry %}, last {{ audit.last_entry|ago }}{% endif %} (triggers)</small></div></a>
+  <a class="admin-link" href="{{ url_for('catalog.albums') }}">{{ ui.icon("edit") }}<div><b>Edit music</b><small>the ✎ buttons on artist, album and song pages</small></div></a>
+</div>
+
+{% if unfinished %}
+  <section class="card unfinished">
+    <h2>Unfinished albums <span class="pill">hidden from visitors</span></h2>
+    <p class="muted" style="margin:4px 0 12px">Albums with fewer than 3 songs are not in the view <code>public_album</code>. Add songs below to publish them.</p>
+    <table class="table">
+      <thead><tr><th>#</th><th>Album</th><th>Artist</th><th>Songs</th><th></th></tr></thead>
+      <tbody>
+        {% for a in unfinished %}
+          <tr><td class="faint">{{ a.album_id }}</td><td><a href="{{ url_for('catalog.album', album_id=a.album_id) }}">{{ a.album_name|or_untitled }}</a> ({{ a.release_year }})</td><td>{{ a.artist_name }}</td><td><b>{{ a.songs }}</b> of 3</td><td><a class="link" href="{{ url_for('admin.edit_album', album_id=a.album_id) }}">edit</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endif %}
 
 <div class="admin-grid">
   <section class="card" id="add-artist">
@@ -96,7 +118,7 @@
   <section class="card">
     <h2>Songs added last</h2>
     <table class="table" style="margin-top:12px">
-      <thead><tr><th>#</th><th>Song</th><th>Album</th><th></th></tr></thead>
+      <thead><tr><th>#</th><th>Song</th><th>Album</th><th></th><th></th></tr></thead>
       <tbody>
         {% for s in newest %}
           <tr>
@@ -104,6 +126,7 @@
             <td>{{ s.song_name|or_untitled }}</td>
             <td><a href="{{ url_for('catalog.album', album_id=s.album_id) }}#song-{{ s.song_id }}">{{ s.album_name|or_untitled }}</a></td>
             <td><a class="link" href="{{ url_for('admin.song_genres', song_id=s.song_id) }}">genres</a></td>
+            <td><a class="link" href="{{ url_for('admin.edit_song', song_id=s.song_id) }}">edit</a></td>
           </tr>
         {% endfor %}
       </tbody>

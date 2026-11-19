@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}My account{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">My account</span>
+    <h1>{{ me.username }}</h1>
+    <p>Member since {{ me.joined_date|nice_date }}. Only you can see this page and your email.</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('community.profile', username=me.username) }}">{{ ui.icon("user") }} See my public profile</a>
+</div>
+
+<div class="admin-grid">
+  <section class="card">
+    <h2>Email</h2>
+    <p class="muted" style="margin:4px 0 16px"><code>UPDATE listener SET email = …</code>. <code>UNIQUE (email)</code> refuses an email that another account already has.</p>
+    <form class="form" method="post" action="{{ url_for('account.change_email') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="email">Email</label><input class="input" id="email" name="email" type="email" maxlength="100" value="{{ me.email }}" required></div>
+      <button class="btn btn-primary">Save email</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Password</h2>
+    <p class="muted" style="margin:4px 0 16px">Only the new password's <b>hash</b> is saved, never the password.</p>
+    <form class="form" method="post" action="{{ url_for('account.change_password') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="password">Current password</label><input class="input" id="password" name="password" type="password" autocomplete="current-password" required></div>
+      <div class="row">
+        <div class="field"><label for="new_password">New password</label><input class="input" id="new_password" name="new_password" type="password" minlength="8" autocomplete="new-password" required></div>
+        <div class="field"><label for="new_password2">Again</label><input class="input" id="new_password2" name="new_password2" type="password" minlength="8" autocomplete="new-password" required></div>
+      </div>
+      <button class="btn btn-primary">Change password</button>
+    </form>
+  </section>
+
+  <section class="card wide danger-zone" id="delete">
+    <h2>Delete my account</h2>
+    <p class="muted" style="margin:6px 0 16px">One <code>DELETE FROM listener</code> removes your account. The foreign keys with <code>ON DELETE CASCADE</code> then remove everything that belongs to you, and a trigger writes one row in the audit log. This can't be undone.</p>
+    <div class="cascade">
+      <div class="cascade-root">{{ ui.icon("user") }} <b>listener</b> <span>you</span></div>
+      <ul>
+        <li><b>{{ goes.favorite_count }}</b> favorites <code>favorite</code></li>
+        <li><b>{{ goes.playlist_count }}</b> playlists <code>playlist</code>
+          <ul><li><b>{{ goes.playlist_song_count }}</b> songs in them <code>playlist_song</code></li></ul></li>
+        <li><b>{{ goes.play_count|thousands }}</b> plays <code>play</code></li>
+        <li><b>{{ goes.review_count }}</b> reviews <code>review</code>
+          <ul><li><b>{{ goes.replies_count }}</b> comments other people wrote under them <code>review_comment</code></li></ul></li>
+        <li><b>{{ goes.comment_count }}</b> comments you wrote <code>review_comment</code></li>
+      </ul>
+    </div>
+    <form class="form" method="post" action="{{ url_for('account.delete_account') }}" style="margin-top:18px;max-width:420px" onsubmit="return confirm('Really delete your account and everything in it?')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="delete_password">Type your password to confirm</label><input class="input" id="delete_password" name="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn btn-danger">{{ ui.icon("trash") }} Delete my account</button>
+    </form>
+  </section>
+</div>
+
+{% endblock %}

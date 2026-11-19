@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}{{ person.username }}{% endblock %}
+{% block content %}
+
+<section class="banner person-banner" style="--h: {{ person.listener_id|hue }}">
+  {{ ui.user_avatar(person.listener_id, person.username, "huge") }}
+  <div>
+    <span class="eyebrow">Listener{% if is_me %} · this is you{% endif %}</span>
+    <h1>{{ person.username }}</h1>
+    <div class="meta-line">
+      <span>Joined <b>{{ person.joined_date|nice_date }}</b></span>
+      {% if genres %}<span class="dot"></span><span>Loves <b>{{ genres[0].genre_name }}</b>{% if genres|length > 1 %} and <b>{{ genres[1].genre_name }}</b>{% endif %}</span>{% endif %}
+    </div>
+    <div class="mini-stats">
+      <span><b>{{ person.favorite_count }}</b> favorites</span>
+      <span><b>{{ person.play_count|thousands }}</b> plays</span>
+      <span><b>{{ person.review_count }}</b> reviews</span>
+      <span><b>{{ person.comment_count }}</b> comments</span>
+      <span><b>{{ person.playlist_count }}</b> playlists <small class="faint">(private)</small></span>
+    </div>
+    {% if is_me %}
+      <div class="banner-actions"><a class="btn btn-ghost btn-sm" href="{{ url_for('account.my_account') }}">{{ ui.icon("settings") }} My account</a></div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="split">
+  <section class="card">
+    <h2>Taste</h2>
+    <p class="muted" style="margin:4px 0 16px">The genres of the songs {{ "you" if is_me else person.username }} ♥. Nothing is stored: it is counted from the <code>favorite</code> table, and <code>SUM(COUNT(*)) OVER ()</code> gives the total for the percent.</p>
+    {% if genres %}
+      <div class="genre-bars">
+        {% for gr in genres %}
+          <div class="genre-bar"><a href="{{ url_for('catalog.genre', genre_id=gr.genre_id) }}">{{ gr.genre_name }}</a><span class="track-bg"><i style="--h: {{ gr.genre_id|hue }}; width: {{ gr.percent }}%"></i></span><b>{{ gr.percent|int }}%</b></div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="faint">No favorites yet, so no taste yet.</p>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Last 30 days</h2>
+    <p class="muted" style="margin:4px 0 6px">Songs played each day. A recursive CTE makes all 30 days, so a day with 0 plays still has a bar.</p>
+    <div class="days" role="img" aria-label="Plays per day for the last 30 days">
+      {% for d in days %}
+        <div class="day-col {{ 'zero' if not d.plays }}" title="{{ d.day|nice_date }}: {{ d.plays }} play{{ '' if d.plays == 1 else 's' }}"><i style="height: {{ (d.plays / busiest_day * 100)|round(1) if busiest_day else 0 }}%"></i></div>
+      {% endfor %}
+    </div>
+    {% if days %}<div class="days-axis"><span>{{ days[0].day|nice_date }}</span><span>{{ days[-1].day|nice_date }}</span></div>{% endif %}
+  </section>
+</div>
+
+{% if both_love is not none %}
+  <section class="section">
+    <div class="card match-card">
+      <div class="match-head">
+        <div class="match-avatars">{{ ui.user_avatar(current_user.id, current_user.username) }}{{ ui.user_avatar(person.listener_id, person.username) }}</div>
+        <div>
+          <h2>You both love {{ both_love|length|plural("song") }}</h2>
+          <p class="muted" style="margin:4px 0 0">Your ♥ <code>INTERSECT</code> {{ person.username }}'s ♥: only the songs in both lists.</p>
+        </div>
+      </div>
+      {% if both_love %}
+        <div class="chips" style="margin-top:14px">
+          {% for s in both_love %}<a class="chip chip-lg" style="--h: {{ s.album_id|hue }}" href="{{ url_for('catalog.album', album_id=s.album_id) }}#song-{{ s.song_id }}">{{ s.song_name|or_untitled }} <small>{{ s.artist_name }}</small></a>{% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endif %}
+
+<div class="split section">
+  <section>
+    <div class="section-head"><div><h2>Favorites</h2><p>The {{ favorites|length }} songs loved last.</p></div></div>
+    {% if favorites %}
+      <ol class="tracks">
+        {% for s in favorites %}{{ ui.song_row(s) }}{% endfor %}
+      </ol>
+    {% else %}
+      {% call ui.empty("♡", "No favorites yet", "Nothing loved yet.") %}{% endcall %}
+    {% endif %}
+  </section>
+
+  <section>
+    <div class="section-head"><div><h2>Most played</h2><p>Counted from the <code>play</code> table.</p></div></div>
+    {% if top %}
+      <ol class="ranked card" style="padding:8px">
+        {% for s in top[:5] %}
+          <li>
+            <a href="{{ url_for('catalog.album', album_id=s.album_id) }}#song-{{ s.song_id }}">{{ ui.cover(s.album_id, s.album_name, "tiny") }}</a>
+            <div class="meta"><b>{{ s.song_name|or_untitled }}</b><span>{{ s.artist_name }}</span></div>
+            <span class="track-plays">{{ s.plays }} ▶</span>
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="faint">No plays yet.</p>
+    {% endif %}
+
+    <div class="section-head" style="margin-top:32px"><div><h2>Comments</h2><p>The last {{ comments|length }}.</p></div></div>
+    {% if comments %}
+      <ul class="comment-feed">
+        {% for c in comments %}
+          <li>
+            <p>“{{ c.comment_text }}”</p>
+            <small>on <a href="{{ url_for('catalog.album', album_id=c.album_id) }}#comment-{{ c.comment_id }}">{{ c.reviewer }}'s review of {{ c.album_name|or_untitled }}</a> · {{ c.commented_at|ago }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="faint">No comments yet.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="section">
+  <div class="section-head"><div><h2>Reviews</h2><p>{{ reviews|length|plural("review") }}, newest first.</p></div></div>
+  {% if reviews %}
+    <div class="review-grid">
+      {% for r in reviews %}
+        <a class="review-card" href="{{ url_for('catalog.album', album_id=r.album_id) }}#review-{{ person.listener_id }}">
+          {{ ui.cover(r.album_id, r.album_name, "tiny") }}
+          <div>
+            <b>{{ r.album_name|or_untitled }}</b> <span class="faint">· {{ r.artist_name }}</span>
+            <div>{{ ui.stars(r.stars) }} <small class="faint">{{ r.review_date|nice_date }}</small></div>
+            {% if r.review_text %}<p>{{ r.review_text }}</p>{% else %}<p class="no-text">Stars only, no words.</p>{% endif %}
+            {% if r.comment_count %}<small class="muted">{{ ui.icon("message") }} {{ r.comment_count|plural("comment") }}</small>{% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% call ui.empty("⭐", "No reviews yet", "No albums reviewed yet.") %}{% endcall %}
+  {% endif %}
+</section>
+
+{% endblock %}

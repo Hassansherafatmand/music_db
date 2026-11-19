@@ -7,24 +7,34 @@
   <div>
     <span class="eyebrow">The catalog</span>
     <h1>Artists</h1>
-    <p>{{ artists|length }} artists. Each card counts the artist's albums and the streams of all their songs (on other music services).</p>
+    <p>Fans are counted with <code>COUNT(DISTINCT listener_id)</code>: a listener who loves 5 songs of an artist is still one fan.</p>
   </div>
 </div>
 
-<div class="grid grid-artists">
-  {% for a in artists %}
-    <a class="artist-card" href="{{ url_for('catalog.artist', artist_id=a.artist_id) }}">
-      {{ ui.avatar(a.artist_id, a.artist_name) }}
-      <div>
-        <h3>{{ a.artist_name }}</h3>
-        <p>{{ a.origin_state or "—" }} · since {{ a.debut_year }}</p>
-      </div>
-      <div class="pill-row">
-        <span class="pill">{{ ui.icon("disc") }} {{ a.albums|plural("album") }}</span>
-        {% if a.streams %}<span class="pill">{{ a.streams|compact }} streams</span>{% endif %}
-      </div>
-    </a>
-  {% endfor %}
-</div>
+{{ ui.filters(fields, sort, sort_options) }}
+{{ ui.active_filters(fields) }}
+{{ ui.count_line(pages, "artists") }}
+
+{% if artists %}
+  <div class="grid grid-artists">
+    {% for a in artists %}
+      <a class="artist-card" href="{{ url_for('catalog.artist', artist_id=a.artist_id) }}">
+        {{ ui.avatar(a.artist_id, a.artist_name) }}
+        <div>
+          <h3>{{ a.artist_name }}</h3>
+          <p><span class="{{ 'hot' if sort == 'state' }}">{{ a.origin_state or "—" }}</span> · <span class="{{ 'hot' if sort == 'debut' }}">since {{ a.debut_year }}</span></p>
+        </div>
+        <div class="pill-row">
+          <span class="pill {{ 'hot' if sort == 'albums' }}">{{ ui.icon("disc") }} {{ a.album_count|plural("album") }}</span>
+          <span class="pill {{ 'hot' if sort == 'fans' }}">{{ ui.icon("heart") }} {{ a.fan_count|plural("fan") }}</span>
+          {% if a.streams %}<span class="pill {{ 'hot' if sort == 'streams' }}">{{ a.streams|compact }} streams</span>{% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+  {{ ui.pagination(pages) }}
+{% else %}
+  {% call ui.empty("🎤", "No artists match", "Try another state or year.") %}<a class="btn btn-soft" href="{{ request.path }}">Clear the filters</a>{% endcall %}
+{% endif %}
 
 {% endblock %}

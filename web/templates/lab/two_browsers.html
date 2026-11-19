@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Lab: Two browsers{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow"><a href="{{ url_for('lab.index') }}">The Lab</a> · Two browsers</span>
+    <h1>Two browsers, <span class="gradient-text">one database</span></h1>
+    <p>Each browser has its own <b>session</b>: a small signed cookie that says who is logged in. The web server and the database are shared by everyone.</p>
+  </div>
+</div>
+
+<div class="split">
+  <section class="card this-browser">
+    <h2>This browser</h2>
+    <dl class="facts">
+      <dt>Browser</dt><dd><b>{{ browser }}</b></dd>
+      <dt>Session name</dt><dd><code class="big-code">{{ session_name }}</code> <small class="faint">(different in every browser)</small></dd>
+      <dt>Logged in as</dt><dd>{% if username %}{{ ui.user_link(current_user.id, username) }}{% else %}<span class="muted">nobody (a guest)</span> · <a class="link" href="{{ url_for('account.login', next=here()) }}">Log in</a>{% endif %}</dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>The database, right now</h2>
+    <p class="muted" style="margin:4px 0 14px">The same numbers in every browser, because there is one database.</p>
+    <div class="stat-tiles three">
+      <div class="stat-tile"><b>{{ live.favorites|thousands }}</b><span>favorites (♥)</span></div>
+      <div class="stat-tile"><b>{{ live.plays|thousands }}</b><span>plays (▶)</span></div>
+      <div class="stat-tile"><b>{{ live.comments|thousands }}</b><span>comments</span></div>
+    </div>
+    <p class="faint" style="margin:12px 0 0;font-size:.85rem">Server time: {{ live.server_time }} · <a class="link" href="{{ here() }}">Refresh</a></p>
+  </section>
+</div>
+
+{% if song %}
+  <section class="section card watch">
+    <div>
+      <h2>Watch this song</h2>
+      <p class="muted">The most loved song on music_db. Press ♥ here, then refresh the other browser: its number changes too.</p>
+    </div>
+    <div class="watch-song">
+      {{ ui.cover(song.album_id, song.album_name, "tiny") }}
+      <div><b>{{ song.song_name|or_untitled }}</b><span class="muted">{{ song.artist_name }}</span></div>
+      <span class="watch-count">{{ song.love_count }} ♥</span>
+      {{ ui.love_button(song) }}
+    </div>
+  </section>
+{% endif %}
+
+<section class="section card">
+  <h2>Try it (2 minutes)</h2>
+  <ol class="steps">
+    <li>Open this page in <b>Chrome</b> and log in as <code>sunny_cactus40</code> (password <code>music330</code>).</li>
+    <li>Open the same address in <b>Safari</b> (or a private window) and log in as <code>brave_falcon3</code>. The two session names are different.</li>
+    <li>In Chrome, press ♥ on the song above. Refresh Safari: the ♥ number and “favorites” went up by one.</li>
+    <li>In Safari, open <a class="link" href="{{ url_for('library.favorites') }}">My favorites</a>: it shows brave_falcon3's songs, not sunny_cactus40's. Same server, same tables, but each SQL uses <code>WHERE listener_id = &lt;who is logged in&gt;</code>.</li>
+  </ol>
+  <p class="muted" style="margin-top:14px"><b>And if both browsers change the same playlist at the same time?</b> Adding a song is a transaction that first locks the playlist's row: <code>SELECT … FOR UPDATE</code>. The second browser waits a few milliseconds until the first one is finished, so both can't take the same position.</p>
+</section>
+
+{% endblock %}

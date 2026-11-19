@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Albums{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow">The catalog</span>
+    <h1>Albums</h1>
+    <p>Every finished album (3 songs or more). The stars filter uses <code>HAVING AVG(stars) &gt;= …</code>, because it filters <i>after</i> the reviews are grouped.</p>
+  </div>
+</div>
+
+{{ ui.filters(fields, sort, sort_options) }}
+{{ ui.active_filters(fields) }}
+{{ ui.count_line(pages, "albums") }}
+
+{% if albums %}
+  <div class="grid grid-albums">
+    {% for a in albums %}
+      <a class="album-card" href="{{ url_for('catalog.album', album_id=a.album_id) }}">
+        {{ ui.cover(a.album_id, a.album_name) }}
+        <h3>{{ a.album_name|or_untitled }}</h3>
+        <p>{{ a.artist_name }} · {{ a.release_year }}</p>
+        <div class="card-stats">
+          {% if a.avg_stars %}<span class="{{ 'hot' if sort == 'rated' }}">{{ ui.stars(a.avg_stars) }} {{ a.avg_stars }}</span>{% else %}<span class="faint">No reviews</span>{% endif %}
+          <span class="{{ 'hot' if sort == 'reviews' }}" title="Reviews">{{ ui.icon("message") }} {{ a.review_count }}</span>
+          <span class="{{ 'hot' if sort == 'loved' }}" title="♥ on its songs">{{ ui.icon("heart") }} {{ a.love_count }}</span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+  {{ ui.pagination(pages) }}
+{% else %}
+  {% call ui.empty("💿", "No albums match", "Try fewer filters.") %}<a class="btn btn-soft" href="{{ request.path }}">Clear the filters</a>{% endcall %}
+{% endif %}
+
+{% endblock %}

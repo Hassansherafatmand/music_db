@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin · Edit {{ artist.artist_name }}{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+    <h1 style="margin-top:12px">Edit an artist</h1>
+    <p>Artist #{{ artist.artist_id }}</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('catalog.artist', artist_id=artist.artist_id) }}">{{ ui.icon("mic") }} Artist page</a>
+</div>
+
+<div class="admin-grid">
+  <section class="card">
+    <h2>Change</h2>
+    <form class="form" method="post" style="margin-top:14px">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="artist_name">Name</label><input class="input" id="artist_name" name="artist_name" maxlength="100" value="{{ artist.artist_name }}" required></div>
+      <div class="row">
+        <div class="field"><label for="origin_state">State <span class="faint">(optional)</span></label><input class="input" id="origin_state" name="origin_state" maxlength="2" value="{{ artist.origin_state or '' }}"></div>
+        <div class="field"><label for="debut_year">Debut year</label><input class="input" id="debut_year" name="debut_year" type="number" min="1900" max="2100" value="{{ artist.debut_year }}" required></div>
+      </div>
+      <button class="btn btn-primary">Save</button>
+    </form>
+  </section>
+
+  <section class="card danger-zone">
+    <h2>Delete</h2>
+    <p class="muted" style="margin:4px 0 14px">What points to this artist:</p>
+    <div class="table-wrap"><table class="table uses">
+      <thead><tr><th>Table</th><th>Rows</th><th>Foreign key</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr class="{{ 'blocks' if uses.albums }}"><td><code>album</code></td><td><b>{{ uses.albums }}</b></td><td><code>fk_album_artist</code></td><td>RESTRICT</td></tr>
+      </tbody>
+    </table></div>
+    <p class="verdict {{ 'bad' if uses.albums else 'good' }}">{% if uses.albums %}MySQL will say no: the artist still has albums. Delete or move the albums first.{% else %}Nothing points here, so MySQL will delete it.{% endif %}</p>
+    <form method="post" action="{{ url_for('admin.delete_artist', artist_id=artist.artist_id) }}" onsubmit="return confirm('Try to delete this artist?')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-danger">{{ ui.icon("trash") }} Try to delete</button>
+    </form>
+  </section>
+</div>
+
+{% endblock %}

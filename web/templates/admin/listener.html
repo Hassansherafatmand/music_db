@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin · {{ person.username }}{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+    <h1 style="margin-top:12px">{{ person.username }}</h1>
+    <p>Listener #{{ person.listener_id }} · joined {{ person.joined_date|nice_date }} · {{ "has a password" if person.has_password else "no password (can't log in)" }}</p>
+  </div>
+  <div class="pill-row">
+    <a class="btn btn-ghost" href="{{ url_for('community.profile', username=person.username) }}">{{ ui.icon("user") }} Public profile</a>
+    <a class="btn btn-ghost" href="{{ url_for('admin.listeners') }}">{{ ui.icon("users") }} All listeners</a>
+  </div>
+</div>
+
+<div class="admin-grid">
+  <section class="card">
+    <h2>Edit</h2>
+    <p class="muted" style="margin:4px 0 14px"><code>UPDATE listener SET username = …, email = …</code></p>
+    <form class="form" method="post" action="{{ url_for('admin.edit_listener', listener_id=person.listener_id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="username">Username</label><input class="input" id="username" name="username" maxlength="30" value="{{ person.username }}" required></div>
+      <div class="field"><label for="email">Email</label><input class="input" id="email" name="email" type="email" maxlength="100" value="{{ person.email }}" required></div>
+      <button class="btn btn-primary">Save</button>
+    </form>
+  </section>
+
+  <section class="card danger-zone">
+    <h2>Delete this listener</h2>
+    <p class="muted" style="margin:4px 0 14px">One <code>DELETE FROM listener</code>. <code>ON DELETE CASCADE</code> removes all of this, and the trigger <code>trg_listener_deleted</code> writes the audit log:</p>
+    <div class="cascade">
+      <div class="cascade-root">{{ ui.icon("user") }} <b>listener</b> <span>{{ person.username }}</span></div>
+      <ul>
+        <li><b>{{ goes.favorite_count }}</b> favorites <code>favorite</code></li>
+        <li><b>{{ goes.playlist_count }}</b> playlists <code>playlist</code><ul><li><b>{{ goes.playlist_song_count }}</b> songs in them <code>playlist_song</code></li></ul></li>
+        <li><b>{{ goes.play_count|thousands }}</b> plays <code>play</code></li>
+        <li><b>{{ goes.review_count }}</b> reviews <code>review</code><ul><li><b>{{ goes.replies_count }}</b> comments by others under them <code>review_comment</code></li></ul></li>
+        <li><b>{{ goes.comment_count }}</b> comments they wrote <code>review_comment</code></li>
+      </ul>
+    </div>
+    <form method="post" action="{{ url_for('admin.delete_listener', listener_id=person.listener_id) }}" style="margin-top:16px" onsubmit="return confirm('Delete {{ person.username }} and everything above?')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-danger">{{ ui.icon("trash") }} Delete {{ person.username }}</button>
+    </form>
+  </section>
+
+  <section class="card wide">
+    <h2>Their reviews ({{ reviews|length }})</h2>
+    <p class="muted" style="margin:4px 0 12px">Moderation: delete any review. Its comments go with it (<code>ON DELETE CASCADE</code>).</p>
+    {% if reviews %}
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Album</th><th>Stars</th><th>Text</th><th>💬</th><th></th></tr></thead>
+        <tbody>
+          {% for r in reviews %}
+            <tr>
+              <td><a href="{{ url_for('catalog.album', album_id=r.album_id) }}#review-{{ person.listener_id }}">{{ r.album_name|or_untitled }}</a></td>
+              <td class="nowrap">{{ ui.stars(r.stars) }}</td>
+              <td class="muted">{{ r.review_text or "—" }}</td>
+              <td>{{ r.comment_count }}</td>
+              <td><form method="post" action="{{ url_for('admin.delete_review', listener_id=person.listener_id, album_id=r.album_id) }}" onsubmit="return confirm('Delete this review?')">{{ ui.form_hidden() }}<button class="icon-btn" title="Delete this review">{{ ui.icon("trash") }}</button></form></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    {% else %}<p class="faint">No reviews.</p>{% endif %}
+  </section>
+
+  <section class="card wide">
+    <h2>Their last comments</h2>
+    {% if comments %}
+      <div class="table-wrap"><table class="table" style="margin-top:10px">
+        <thead><tr><th>Comment</th><th>Under</th><th>When</th><th></th></tr></thead>
+        <tbody>
+          {% for c in comments %}
+            <tr>
+              <td>“{{ c.comment_text }}”</td>
+              <td><a href="{{ url_for('catalog.album', album_id=c.album_id) }}#comment-{{ c.comment_id }}">{{ c.reviewer }}'s review of {{ c.album_name|or_untitled }}</a></td>
+              <td class="nowrap faint">{{ c.commented_at|ago }}</td>
+              <td><form method="post" action="{{ url_for('admin.delete_comment', comment_id=c.comment_id) }}">{{ ui.form_hidden() }}<button class="icon-btn" title="Delete this comment">{{ ui.icon("trash") }}</button></form></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table></div>
+    {% else %}<p class="faint" style="margin-top:8px">No comments.</p>{% endif %}
+  </section>
+</div>
+
+{% endblock %}

@@ -13,6 +13,7 @@
       <span>Since <b>{{ artist.debut_year }}</b></span><span class="dot"></span>
       <span><b>{{ albums|length }}</b> album{{ "" if albums|length == 1 else "s" }}</span>
     </div>
+    {% if is_admin %}<div class="banner-actions"><a class="btn btn-ghost btn-sm" href="{{ url_for('admin.edit_artist', artist_id=artist.artist_id) }}">{{ ui.icon("edit") }} Edit artist</a></div>{% endif %}
   </div>
 </section>
 
@@ -36,12 +37,12 @@
         <a class="album-card" href="{{ url_for('catalog.album', album_id=a.album_id) }}">
           {{ ui.cover(a.album_id, a.album_name) }}
           <h3>{{ a.album_name|or_untitled }}</h3>
-          <p>{{ a.release_year }} · {{ a.songs|plural("song") }}</p>
+          <p>{{ a.release_year }} · {{ a.songs|plural("song") }}{% if a.songs < 3 %} · <span class="hidden-tag">hidden</span>{% endif %}</p>
         </a>
       {% endfor %}
     </div>
   {% else %}
-    {% call ui.empty("💿", "No albums yet", "Some artists in the practice data have no albums. That's on purpose, for LEFT JOIN practice.") %}{% endcall %}
+    {% call ui.empty("💿", "No albums yet", "This artist has no finished albums yet.") %}{% endcall %}
   {% endif %}
 </section>
 

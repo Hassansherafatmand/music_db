@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Lab: Speed{% endblock %}
+
+{% macro plan_table(plan) -%}
+<div class="table-wrap">
+<table class="table plan">
+  <thead><tr><th>table</th><th>type</th><th>key (index used)</th><th>rows to read</th><th>Extra</th></tr></thead>
+  <tbody>
+    {% for p in plan %}
+      <tr>
+        <td><code>{{ p.table }}</code></td>
+        <td><span class="plan-type t-{{ p.type or 'none' }}">{{ p.type or "—" }}</span></td>
+        <td>{{ p.key or "none" }}</td>
+        <td><b>{{ p.rows|thousands if p.rows is not none else "—" }}</b></td>
+        <td class="faint">{{ p.Extra or "" }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{%- endmacro %}
+
+{% macro race(items, labels) -%}
+<div class="race">
+  {% for t in items %}
+    <article class="race-lane {{ labels[loop.index0][1] }}">
+      <h3>{{ labels[loop.index0][0] }}</h3>
+      <p class="muted">{{ t.about }}</p>
+      <pre>{{ t.sql }}</pre>
+      {{ plan_table(t.plan) }}
+      <p class="race-result"><b>{{ t.rows|length|thousands }}</b> {{ "row" if t.rows|length == 1 else "rows" }}{% if t.rows and t.rows[0].plays is defined %}: <b>{{ t.rows[0].plays }}</b> plays{% endif %} · {{ "%.2f"|format(t.ms) }} ms</p>
+    </article>
+  {% endfor %}
+</div>
+{%- endmacro %}
+
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="eyebrow"><a href="{{ url_for('lab.index') }}">The Lab</a> · Speed</span>
+    <h1>Indexes and <code class="h1-code">EXPLAIN</code></h1>
+    <p>An index is like the index at the back of a book: MySQL jumps to the right rows instead of reading the whole table. <code>EXPLAIN</code> shows MySQL's plan. Look at <b>type</b> (<code>ALL</code> = read every row, <code>range</code>/<code>ref</code> = use an index) and <b>rows to read</b>.</p>
+  </div>
+</div>
+
+<div class="card legend">
+  <span><span class="plan-type t-ALL">ALL</span> reads the whole table</span>
+  <span><span class="plan-type t-index">index</span> reads the whole index</span>
+  <span><span class="plan-type t-range">range</span> reads only a part of an index</span>
+  <span><span class="plan-type t-fulltext">fulltext</span> uses a FULLTEXT index</span>
+  <span class="faint">With only about 1,200 songs and 9,000 plays, every query is fast. With millions of rows, the difference is huge.</span>
+</div>
+
+<section class="section">
+  <div class="section-head">
+    <div><h2>1. Find song names</h2><p>The index <code>idx_song_name</code> is sorted by the first letters, like a phone book.</p></div>
+    <form class="new-playlist" method="get" action="{{ url_for('lab.speed') }}">
+      <input type="hidden" name="day" value="{{ day }}">
+      <label class="sr-only" for="word">Word</label>
+      <input class="input" id="word" name="word" value="{{ word }}" maxlength="20" pattern="[A-Za-z0-9]{3,20}" title="3 to 20 letters or numbers">
+      <button class="btn btn-soft btn-sm">Try</button>
+    </form>
+  </div>
+  {{ race(names, [("Starts with: LIKE '" ~ word ~ "%'", "good"), ("Contains: LIKE '%" ~ word ~ "%'", "bad"), ("FULLTEXT: MATCH … AGAINST", "good")]) }}
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <div><h2>2. The plays of one day</h2><p>The index <code>idx_play_played_at</code> keeps <code>played_at</code> in order.</p></div>
+    <form class="new-playlist" method="get" action="{{ url_for('lab.speed') }}">
+      <input type="hidden" name="word" value="{{ word }}">
+      <label class="sr-only" for="day">Day</label>
+      <input class="input" id="day" name="day" type="date" value="{{ day }}" min="2026-10-01" max="2026-12-31">
+      <button class="btn btn-soft btn-sm">Try</button>
+    </form>
+  </div>
+  {{ race(plays, [("A range on the column", "good"), ("A function around the column", "bad"), ("The range, without the index", "bad")]) }}
+  <p class="muted" style="margin-top:14px"><b>The lesson:</b> <code>WHERE DATE(played_at) = …</code> looks simpler, but MySQL must run <code>DATE()</code> on every row first, so the index can't help. Write the condition on the column itself: <code>played_at &gt;= day AND played_at &lt; day + 1</code>.</p>
+</section>
+
+{% endblock %}

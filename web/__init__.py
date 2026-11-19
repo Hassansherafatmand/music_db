@@ -6,9 +6,10 @@ Start it from the repo folder:   flask --app web run --port 5050
 import os
 from datetime import date, datetime
 from pathlib import Path
+from urllib.parse import urlencode
 
 from dotenv import load_dotenv
-from flask import Flask, g, render_template, session
+from flask import Flask, g, render_template, request, session
 
 from . import db
 from .security import check_csrf, csrf_token, here
@@ -38,8 +39,8 @@ def create_app():
 
     db.init_app(app)
 
-    from . import account, admin, catalog, library, reviews
-    for module in (catalog, account, library, reviews, admin):
+    from . import account, admin, catalog, community, lab, library, reviews
+    for module in (catalog, community, account, library, reviews, admin, lab):
         app.register_blueprint(module.bp)
 
     app.before_request(check_csrf)
@@ -62,8 +63,20 @@ def _add_template_helpers(app):
             "is_admin": bool(session.get("is_admin")),
             "csrf_token": csrf_token,
             "here": here,
+            "url_with": url_with,
             "now_playing": _now_playing(),
         }
+
+    def url_with(**changes):
+        """This page's address with some filters changed: url_with(genre=3, page=None).
+        None removes a filter. Used by the filter chips and the page numbers."""
+        args = request.args.to_dict()
+        for key, value in changes.items():
+            if value is None or value == "":
+                args.pop(key, None)
+            else:
+                args[key] = value
+        return request.path + ("?" + urlencode(args) if args else "")
 
     @app.template_filter("duration")
     def duration(seconds):
@@ -118,6 +131,24 @@ def _add_template_helpers(app):
         if not isinstance(value, (date, datetime)):
             return value or ""
         return f"{value:%b} {value.day}, {value.year}"
+
+    @app.template_filter("ago")
+    def ago(value):
+        """A date or time -> 'today', 'yesterday', '3 days ago', or 'Nov 9, 2026'."""
+        if not isinstance(value, (date, datetime)):
+            return value or ""
+        day = value.date() if isinstance(value, datetime) else value
+        days = (date.today() - day).days
+        if days <= 0:
+            return "today"
+        if days == 1:
+            return "yesterday"
+        if days < 7:
+            return f"{days} days ago"
+        if days < 35:
+            weeks = days // 7
+            return f"{weeks} week{'s' if weeks > 1 else ''} ago"
+        return nice_date(day)
 
     @app.template_filter("genre_list")
     def genre_list(packed):

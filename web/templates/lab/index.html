@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}The Lab{% endblock %}
+{% block content %}
+
+<section class="hero lab-hero">
+  <div>
+    <span class="eyebrow">The Lab</span>
+    <h1>How music_db <span class="gradient-text">really works.</span></h1>
+    <p class="lead">A website is three parts that talk to each other: your <b>browser</b>, the <b>web server</b> (Python + Flask) and the <b>database</b> (MySQL). These pages open the box and show each part at work.</p>
+  </div>
+  <div class="stack" aria-label="Browser, web server and database">
+    <div class="stack-box"><span>{{ ui.icon("monitor") }}</span><div><b>Browser</b><small>asks for a page (HTTP GET or POST)</small></div></div>
+    <div class="stack-arrow">↓ ↑</div>
+    <div class="stack-box"><span>{{ ui.icon("settings") }}</span><div><b>Web server</b><small>Flask runs SQL from web/sql/*.sql</small></div></div>
+    <div class="stack-arrow">↓ ↑</div>
+    <div class="stack-box db"><span>{{ ui.icon("database") }}</span><div><b>MySQL: music_db</b><small>13 tables · 4 views · 4 triggers</small></div></div>
+  </div>
+</section>
+
+<div class="lab-grid section">
+  <a class="lab-card" href="{{ url_for('lab.security') }}">
+    <span class="lab-icon">{{ ui.icon("lock") }}</span>
+    <h2>Security</h2>
+    <p>Try a SQL injection attack and see why it fails. Plus: password hashes, the fixed list of sorts, form tokens (CSRF), and what the website's MySQL user may do.</p>
+    <span class="link">Open {{ ui.icon("arrow") }}</span>
+  </a>
+  <a class="lab-card" href="{{ url_for('lab.speed') }}">
+    <span class="lab-icon">{{ ui.icon("zap") }}</span>
+    <h2>Speed: indexes</h2>
+    <p>The same question with and without an index. <code>EXPLAIN</code> shows how MySQL finds the rows, and how many it must read.</p>
+    <span class="link">Open {{ ui.icon("arrow") }}</span>
+  </a>
+  <a class="lab-card" href="{{ url_for('lab.two_browsers') }}">
+    <span class="lab-icon">{{ ui.icon("monitor") }}</span>
+    <h2>Two browsers</h2>
+    <p>Log in as two different listeners in two browsers at the same time. Two sessions, one server, one database.</p>
+    <span class="link">Open {{ ui.icon("arrow") }}</span>
+  </a>
+</div>
+
+<section class="section card">
+  <h2>Where to find each SQL idea on the website</h2>
+  <p class="muted" style="margin:4px 0 16px">Every page shows its own SQL in <b>“Under the hood”</b> at the bottom.</p>
+  <div class="table-wrap"><table class="table sql-map">
+    <thead><tr><th>SQL</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td><code>WHERE</code>, <code>BETWEEN</code>, <code>LIKE</code></td><td><a class="link" href="{{ url_for('catalog.songs', length='medium', decade=1990) }}">Songs</a> (filters), <a class="link" href="{{ url_for('catalog.search', q='in') }}">Search</a></td></tr>
+      <tr><td><code>JOIN</code> (2 to 5 tables)</td><td>Every song list: song → album → artist, and <code>song_genre</code> → <code>genre</code></td></tr>
+      <tr><td><code>LEFT JOIN</code></td><td><a class="link" href="{{ url_for('catalog.albums') }}">Albums</a> (albums with no reviews stay), the admin's reports</td></tr>
+      <tr><td><code>GROUP BY</code> + <code>COUNT</code> / <code>AVG</code> / <code>SUM</code></td><td><a class="link" href="{{ url_for('catalog.home') }}">Home</a> (most played, most loved), <a class="link" href="{{ url_for('catalog.artists', sort='fans') }}">Artists</a> (<code>COUNT(DISTINCT)</code>)</td></tr>
+      <tr><td><code>HAVING</code></td><td><a class="link" href="{{ url_for('catalog.albums', stars=4) }}">Albums: 4★ or more</a></td></tr>
+      <tr><td><code>ORDER BY</code> + <code>LIMIT</code> / <code>OFFSET</code></td><td>Every list with pages (the sort menu)</td></tr>
+      <tr><td>Subqueries, <code>EXISTS</code>, correlated subqueries</td><td><a class="link" href="{{ url_for('catalog.songs') }}">Songs</a> (♥ and ▶ counts), the admin's reports</td></tr>
+      <tr><td><code>UNION ALL</code>, <code>INTERSECT</code>, <code>EXCEPT</code></td><td><a class="link" href="{{ url_for('catalog.home') }}">Home</a> (“What's new”), a listener's profile (“You both love”), reports</td></tr>
+      <tr><td>Window functions, CTEs (<code>WITH</code>, <code>WITH RECURSIVE</code>)</td><td><a class="link" href="{{ url_for('catalog.charts') }}">Charts</a>, <a class="link" href="{{ url_for('community.listeners') }}">Listeners</a> (top genre)</td></tr>
+      <tr><td>Views</td><td><code>album_rating</code>, <code>song_popularity</code>, <code>listener_activity</code>, <code>public_album</code></td></tr>
+      <tr><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td><td>♥, ▶, playlists, reviews, comments, My account, the admin page</td></tr>
+      <tr><td>Transactions, <code>FOR UPDATE</code></td><td>Playlists (add, move, remove), adding a song with its genres</td></tr>
+      <tr><td><code>ON DELETE CASCADE</code> / <code>RESTRICT</code></td><td>My account → Delete; the admin's delete buttons</td></tr>
+      <tr><td>Triggers</td><td>The admin's audit log</td></tr>
+      <tr><td>Indexes, <code>FULLTEXT</code>, <code>EXPLAIN</code></td><td><a class="link" href="{{ url_for('lab.speed') }}">Lab: Speed</a>, <a class="link" href="{{ url_for('catalog.search', q='golden train') }}">Search</a></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+{% endblock %}

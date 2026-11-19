@@ -19,8 +19,12 @@
 
     <nav class="mainnav" aria-label="Main">
       <a href="{{ url_for('catalog.home') }}" class="{{ 'active' if endpoint == 'catalog.home' }}">Home</a>
-      <a href="{{ url_for('catalog.artists') }}" class="{{ 'active' if endpoint in ('catalog.artists', 'catalog.artist', 'catalog.album') }}">Artists</a>
-      <a href="{{ url_for('catalog.genres') }}" class="{{ 'active' if endpoint in ('catalog.genres', 'catalog.genre') }}">Genres</a>
+      <a href="{{ url_for('catalog.songs') }}" class="{{ 'active' if endpoint in ('catalog.songs', 'catalog.genres', 'catalog.genre') }}">Songs</a>
+      <a href="{{ url_for('catalog.albums') }}" class="{{ 'active' if endpoint in ('catalog.albums', 'catalog.album') }}">Albums</a>
+      <a href="{{ url_for('catalog.artists') }}" class="{{ 'active' if endpoint in ('catalog.artists', 'catalog.artist') }}">Artists</a>
+      <a href="{{ url_for('catalog.charts') }}" class="{{ 'active' if endpoint == 'catalog.charts' }}">Charts</a>
+      <a href="{{ url_for('community.listeners') }}" class="{{ 'active' if endpoint.startswith('community.') }}">Listeners</a>
+      <a href="{{ url_for('lab.index') }}" class="{{ 'active' if endpoint.startswith('lab.') }}">{{ ui.icon("flask") }}Lab</a>
     </nav>
 
     <form class="searchbox" action="{{ url_for('catalog.search') }}" role="search">
@@ -38,8 +42,10 @@
         <details class="usermenu">
           <summary title="{{ current_user.username }}"><span class="avatar-sm">{{ current_user.username[:2]|upper }}</span><span class="sr-only">Account menu</span></summary>
           <div class="pop-menu">
-            <p>Logged in as</p>
-            <a href="{{ url_for('library.top_songs') }}">{{ ui.icon("user") }} {{ current_user.username }}</a>
+            <p>Logged in as {{ current_user.username }}</p>
+            <a href="{{ url_for('community.profile', username=current_user.username) }}">{{ ui.icon("user") }} My profile</a>
+            <a href="{{ url_for('account.my_account') }}">{{ ui.icon("settings") }} My account</a>
+            <a href="{{ url_for('library.top_songs') }}">{{ ui.icon("chart") }} My top songs</a>
             <div class="divider"></div>
             <form method="post" action="{{ url_for('account.logout') }}">
               <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
@@ -73,7 +79,7 @@
   <div class="footer-inner">
     <div class="footer-top">
       <span class="brand">{{ ui.disc() }}<span>music<b class="gradient-text">_db</b></span></span>
-      <span>A CS330 Databases final project · MySQL + Python + Flask · made-up practice data</span>
+      <span>A CS330 Databases final project · MySQL + Python + Flask · made-up practice data · <a href="{{ url_for('lab.index') }}">{{ ui.icon("flask") }} How it works</a></span>
       {% if is_admin %}
         <span><a href="{{ url_for('admin.dashboard') }}">{{ ui.icon("shield") }} Admin page</a></span>
       {% else %}
@@ -91,6 +97,7 @@
           <li>
             <div class="xray-head"><code>{{ q.name }}</code><span>{{ q.about }}</span><small>{{ q.rows }} row{{ "" if q.rows == 1 else "s" }}{{ "" if q.fetch else " changed" }} · {{ "%.1f"|format(q.ms) }} ms</small></div>
             <pre>{{ q.sql }}</pre>
+            {% if q.params %}<div class="xray-params"><span>Parameters, sent separately:</span>{% for key, value in q.params.items() %}<code>{{ key }} = {{ "NULL" if value is none else (value if value is number else "'" ~ value ~ "'") }}</code>{% endfor %}</div>{% endif %}
           </li>
         {% endfor %}
       </ol>

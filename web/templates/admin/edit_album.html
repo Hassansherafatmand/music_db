@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% import "macros.html" as ui with context %}
+{% block title %}Admin · Edit {{ album.album_name|or_untitled }}{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <span class="badge-admin">{{ ui.icon("shield") }} Admin mode</span>
+    <h1 style="margin-top:12px">Edit an album</h1>
+    <p>Album #{{ album.album_id }} by {{ album.artist_name }}</p>
+  </div>
+  <a class="btn btn-ghost" href="{{ url_for('catalog.album', album_id=album.album_id) }}">{{ ui.icon("disc") }} Album page</a>
+</div>
+
+<div class="admin-grid">
+  <section class="card">
+    <h2>Change</h2>
+    <form class="form" method="post" style="margin-top:14px">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label for="album_name">Name</label><input class="input" id="album_name" name="album_name" maxlength="100" value="{{ album.album_name or '' }}" required></div>
+      <div class="row">
+        <div class="field">
+          <label for="artist_id">Artist</label>
+          <select class="select" id="artist_id" name="artist_id" required>
+            {% for a in artists %}<option value="{{ a.artist_id }}" {{ "selected" if a.artist_id == album.artist_id }}>{{ a.artist_name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field"><label for="release_year">Release year</label><input class="input" id="release_year" name="release_year" type="number" min="1900" max="2100" value="{{ album.release_year }}" required></div>
+      </div>
+      <button class="btn btn-primary">Save</button>
+    </form>
+  </section>
+
+  <section class="card danger-zone">
+    <h2>Delete</h2>
+    <p class="muted" style="margin:4px 0 14px">What points to this album:</p>
+    <div class="table-wrap"><table class="table uses">
+      <thead><tr><th>Table</th><th>Rows</th><th>Foreign key</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr class="{{ 'blocks' if uses.songs }}"><td><code>song</code></td><td><b>{{ uses.songs }}</b></td><td><code>fk_song_album</code></td><td>RESTRICT</td></tr>
+        <tr class="{{ 'blocks' if uses.reviews }}"><td><code>review</code></td><td><b>{{ uses.reviews }}</b></td><td><code>fk_review_album</code></td><td>RESTRICT</td></tr>
+      </tbody>
+    </table></div>
+    <p class="verdict {{ 'bad' if uses.songs or uses.reviews else 'good' }}">{% if uses.songs or uses.reviews %}MySQL will say no: songs or reviews still point to this album. Music is protected on purpose.{% else %}Nothing points here, so MySQL will delete it.{% endif %}</p>
+    <form method="post" action="{{ url_for('admin.delete_album', album_id=album.album_id) }}" onsubmit="return confirm('Try to delete this album?')">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="btn btn-danger">{{ ui.icon("trash") }} Try to delete</button>
+    </form>
+  </section>
+</div>
+
+{% endblock %}

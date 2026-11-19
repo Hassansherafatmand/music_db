@@ -35,3 +35,32 @@ ON DUPLICATE KEY UPDATE stars       = new.stars,
 -- Delete my review of this album.
 DELETE FROM review
 WHERE listener_id = %(listener_id)s AND album_id = %(album_id)s;
+
+
+-- ============================================================ Comments under reviews
+
+-- name: album_comments
+-- All comments under the reviews of one album, oldest first (a conversation).
+-- The website puts each comment under its review (reviewer_id + album_id).
+SELECT c.comment_id, c.reviewer_id, c.listener_id, l.username, c.comment_text, c.commented_at
+FROM review_comment c
+JOIN listener l ON l.listener_id = c.listener_id
+WHERE c.album_id = %(album_id)s
+ORDER BY c.commented_at, c.comment_id;
+
+-- name: add_comment
+-- Answer a review. The two-column foreign key (reviewer_id, album_id) needs a
+-- review that exists. CHECK refuses a comment with no words.
+INSERT INTO review_comment (reviewer_id, album_id, listener_id, comment_text)
+VALUES (%(reviewer_id)s, %(album_id)s, %(listener_id)s, %(comment_text)s);
+
+-- name: comment_by_id
+-- One comment (to find its album, and its writer).
+SELECT comment_id, reviewer_id, album_id, listener_id
+FROM review_comment
+WHERE comment_id = %(comment_id)s;
+
+-- name: delete_my_comment
+-- Delete my own comment (the listener_id check: only my own).
+DELETE FROM review_comment
+WHERE comment_id = %(comment_id)s AND listener_id = %(listener_id)s;

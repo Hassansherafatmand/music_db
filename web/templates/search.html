@@ -8,10 +8,15 @@
     <span class="eyebrow">Search</span>
     {% if results is none %}
       <h1>What do you want to hear?</h1>
-      <p>Type at least 2 letters. We look in song, artist and album names (SQL <code>LIKE '%words%'</code>).</p>
+      <p>Type at least 2 letters. We look in song, artist and album names with the <code>FULLTEXT</code> indexes: <code>MATCH (song_name) AGAINST (…)</code> finds whole words in any position, best match first.</p>
     {% else %}
       <h1>“{{ words }}”</h1>
       <p>{{ results.songs|length|plural("song") }}, {{ results.artists|length|plural("artist") }}, {{ results.albums|length|plural("album") }}.</p>
+      {% if method == "fulltext" %}
+        <p class="method">{{ ui.icon("zap") }} Searched with the <b>FULLTEXT</b> index: <code>MATCH … AGAINST (… IN BOOLEAN MODE)</code>, best match first.</p>
+      {% else %}
+        <p class="method">{{ ui.icon("search") }} Searched with <b>LIKE '%…%'</b>: FULLTEXT skips words under 3 letters and very common words (like “the”), or it found nothing.</p>
+      {% endif %}
     {% endif %}
   </div>
 </div>
@@ -59,7 +64,7 @@
 
   {% if results.songs %}
     <section class="section">
-      <div class="section-head"><div><h2>Songs</h2><p>Most streamed first{{ " (the first 50)" if results.songs|length == 50 }}.</p></div></div>
+      <div class="section-head"><div><h2>Songs</h2><p>{{ "Best match first" if method == "fulltext" else "Most streamed first" }}{{ " (the first 50)" if results.songs|length == 50 }}.</p></div></div>
       {{ ui.tracks_head("") }}
       <ol class="tracks">
         {% for s in results.songs %}{{ ui.song_row(s) }}{% endfor %}

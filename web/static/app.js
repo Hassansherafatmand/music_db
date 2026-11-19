@@ -24,3 +24,10 @@ document.addEventListener("keydown", (event) => {
       .forEach((menu) => menu.removeAttribute("open"));
   }
 });
+
+// The filter menus on the list pages: choosing something reloads the list at once.
+// (Without JavaScript, the "Apply" button does the same.)
+document.documentElement.classList.add("js");
+document.querySelectorAll("form.filters select").forEach((menu) => {
+  menu.addEventListener("change", () => menu.form.submit());
+});

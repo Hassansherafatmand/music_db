@@ -4,6 +4,9 @@
 {% block content %}
 
 {% set total = tracks|sum(attribute="duration_seconds") %}
+{% if album.song_count < 3 %}
+  <div class="notice">{{ ui.icon("shield") }} <span><b>Hidden from visitors.</b> This album has {{ album.song_count|plural("song") }}. It needs 3 or more to be in the view <code>public_album</code>. Only the admin can see this page.</span></div>
+{% endif %}
 <section class="banner album" style="--h: {{ album.album_id|hue }}">
   <div class="album-art">
     <div class="vinyl" style="--h: {{ album.album_id|hue }}" aria-hidden="true"></div>
@@ -29,7 +32,14 @@
         </form>
       {% endif %}
       <a class="btn btn-ghost" href="#reviews">{{ ui.icon("star") }} {{ "Change my review" if my_review else "Write a review" }}</a>
+      {% if is_admin %}<a class="btn btn-ghost" href="{{ url_for('admin.edit_album', album_id=album.album_id) }}">{{ ui.icon("edit") }} Edit album</a>{% endif %}
     </div>
+    {% if lovers %}
+      <div class="lovers">
+        <div class="lovers-faces">{% for p in lovers[:8] %}<a href="{{ url_for('community.profile', username=p.username) }}" title="{{ p.username }} loves {{ p.loved_songs|plural('song') }} here">{{ ui.user_avatar(p.listener_id, p.username) }}</a>{% endfor %}</div>
+        <span>Loved by <b>{{ lovers|length|plural("listener") }}</b></span>
+      </div>
+    {% endif %}
   </div>
 </section>
 
@@ -40,25 +50,67 @@
       {% for s in tracks %}{{ ui.song_row(s, num=s.track_number, show_album=false) }}{% endfor %}
     </ol>
   {% else %}
-    {% call ui.empty("💿", "No songs on this album yet", "Some albums in the practice data have no songs, on purpose.") %}{% endcall %}
+    {% call ui.empty("💿", "No songs on this album yet", "Add its songs on the admin page.") %}{% endcall %}
   {% endif %}
 </section>
 
 <section class="section" id="reviews">
-  <div class="section-head"><div><h2>Reviews</h2><p>One review per listener per album, 1 to 5 stars (a <code>CHECK</code> in the database).</p></div></div>
+  <div class="section-head"><div><h2>Reviews</h2><p>One review per listener per album, 1 to 5 stars (a <code>CHECK</code>). Comments point to a review with a two-column foreign key.</p></div></div>
 
   <div class="split">
     <div class="review-list">
       {% for r in reviews %}
-        <article class="review {{ 'mine' if current_user and r.listener_id == current_user.id }}">
-          <span class="avatar-sm">{{ r.username[:2]|upper }}</span>
+        {% set mine = current_user and r.listener_id == current_user.id %}
+        <article class="review {{ 'mine' if mine }}" id="review-{{ r.listener_id }}">
+          <a href="{{ url_for('community.profile', username=r.username) }}">{{ ui.user_avatar(r.listener_id, r.username) }}</a>
           <div>
             <header>
-              <b>{{ r.username }}</b>{% if current_user and r.listener_id == current_user.id %}<span class="pill">you</span>{% endif %}
+              <a class="who" href="{{ url_for('community.profile', username=r.username) }}"><b>{{ r.username }}</b></a>{% if mine %}<span class="pill">you</span>{% endif %}
               {{ ui.stars(r.stars) }}
               <small>{{ r.review_date|nice_date }}</small>
+              {% if is_admin %}
+                <form class="inline mod" method="post" action="{{ url_for('admin.delete_review', listener_id=r.listener_id, album_id=album.album_id) }}" onsubmit="return confirm('Delete this review and its comments?')">
+                  {{ ui.form_hidden("reviews") }}
+                  <button class="icon-btn" title="Delete this review (admin)">{{ ui.icon("trash") }}<span class="sr-only">Delete review</span></button>
+                </form>
+              {% endif %}
             </header>
             {% if r.review_text %}<p>{{ r.review_text }}</p>{% else %}<p class="no-text">Stars only, no words.</p>{% endif %}
+
+            {% set thread = comments.get(r.listener_id, []) %}
+            {% if thread %}
+              <ul class="comments">
+                {% for c in thread %}
+                  <li id="comment-{{ c.comment_id }}" class="{{ 'by-reviewer' if c.listener_id == r.listener_id }}">
+                    <a href="{{ url_for('community.profile', username=c.username) }}">{{ ui.user_avatar(c.listener_id, c.username, "sm") }}</a>
+                    <div>
+                      <span class="comment-head"><a class="who" href="{{ url_for('community.profile', username=c.username) }}">{{ c.username }}</a>{% if c.listener_id == r.listener_id %}<span class="pill">reviewer</span>{% endif %}<small>{{ c.commented_at|ago }}</small>
+                        {% if current_user and c.listener_id == current_user.id %}
+                          <form class="inline" method="post" action="{{ url_for('reviews.delete_comment', comment_id=c.comment_id) }}">{{ ui.form_hidden() }}<button class="text-btn" title="Delete my comment">delete</button></form>
+                        {% elif is_admin %}
+                          <form class="inline" method="post" action="{{ url_for('admin.delete_comment', comment_id=c.comment_id) }}">{{ ui.form_hidden("review-" ~ r.listener_id) }}<button class="text-btn" title="Delete (admin)">delete</button></form>
+                        {% endif %}
+                      </span>
+                      <p>{{ c.comment_text }}</p>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+
+            {% if current_user %}
+              <details class="reply">
+                <summary>{{ ui.icon("message") }} Reply{% if thread %} ({{ thread|length }}){% endif %}</summary>
+                <form method="post" action="{{ url_for('reviews.add_comment', album_id=album.album_id, reviewer_id=r.listener_id) }}">
+                  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                  <label class="sr-only" for="c-{{ r.listener_id }}">Your comment</label>
+                  <textarea class="textarea" id="c-{{ r.listener_id }}" name="comment_text" maxlength="500" placeholder="Answer {{ r.username }}…" required></textarea>
+                  <button class="btn btn-primary btn-sm">Post comment</button>
+                </form>
+              </details>
+            {% elif thread %}
+              <p class="faint" style="font-size:.85rem;margin-top:8px"><a class="link" href="{{ url_for('account.login', next=here() ~ '#review-' ~ r.listener_id) }}">Log in</a> to reply.</p>
+            {% endif %}
           </div>
         </article>
       {% else %}
