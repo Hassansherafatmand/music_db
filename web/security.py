@@ -31,7 +31,7 @@ def login_required(view):
 
 
 def admin_required(view):
-    """The admin page needs the admin password (ADMIN_PASSWORD in the .env file)."""
+    """The admin page needs the admin login (ADMIN_USERNAME and ADMIN_PASSWORD in .env)."""
     @wraps(view)
     def wrapper(*args, **kwargs):
         if not session.get("is_admin"):

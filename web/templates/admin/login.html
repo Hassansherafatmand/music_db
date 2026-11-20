@@ -14,12 +14,22 @@
       <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
       {% if error %}<div class="toast error" style="animation:none">{{ error }}</div>{% endif %}
       <div class="field">
+        <label for="username">Admin username</label>
+        <input class="input" id="username" name="username" autocomplete="username" required autofocus>
+      </div>
+      <div class="field">
         <label for="password">Admin password</label>
-        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required autofocus>
-        <small>It is <code>ADMIN_PASSWORD</code> in your private <code>.env</code> file.</small>
+        <input class="input" id="password" name="password" type="password" autocomplete="current-password" required>
+        <small>They are <code>ADMIN_USERNAME</code> and <code>ADMIN_PASSWORD</code> in your private <code>.env</code> file.</small>
       </div>
       <button class="btn btn-primary btn-lg">Open the admin page</button>
     </form>
+    {% if demo %}
+      <div class="hint" style="margin-top:18px">
+        <span>💡</span>
+        <div><b>Trying it out?</b> The demo admin account is <code>admin</code> with the password <code>music330</code>.</div>
+      </div>
+    {% endif %}
   {% endif %}
 </div>
 

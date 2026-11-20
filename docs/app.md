@@ -58,7 +58,7 @@ nightly job's idea (each listener's top songs) is shown on the website instead, 
 | My playlists, one playlist | `/me/playlists`, `/playlists/<id>` | the owner only | playlists in my own order |
 | My top songs | `/me/top` | logged in | my plays: top songs, genres, weekdays |
 | My account | `/me/account` | logged in | change my email or password, delete my account |
-| Admin pages | `/admin/...` | the admin password | CRUD for music and listeners, moderation, reports, audit log |
+| Admin pages | `/admin/...` | the admin account (demo: `admin` / `music330`) | CRUD for music and listeners, moderation, reports, audit log |
 
 The buttons change data:
 

@@ -23,6 +23,7 @@ def create_app():
     app = Flask(__name__)
     app.config.update(
         SECRET_KEY=os.environ.get("SECRET_KEY", ""),
+        ADMIN_USERNAME=os.environ.get("ADMIN_USERNAME", "admin"),
         ADMIN_PASSWORD=os.environ.get("ADMIN_PASSWORD", ""),
         MYSQL_HOST=os.environ.get("MYSQL_HOST", "127.0.0.1"),
         MYSQL_PORT=int(os.environ.get("MYSQL_PORT", "3306")),

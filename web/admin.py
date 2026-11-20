@@ -6,7 +6,8 @@ CRUD = Create, Read, Update, Delete. The admin can:
   - delete any review or comment (moderation)
   - read the reports (questions answered with SQL) and the audit log (triggers)
 
-It is protected by one password, ADMIN_PASSWORD in the private .env file.
+It is protected by one admin account: ADMIN_USERNAME and ADMIN_PASSWORD in the private
+.env file. The demo account (in .env.example) is admin / music330.
 """
 
 import re
@@ -26,18 +27,30 @@ bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 # ---------------------------------------------------------------- log in / out
 
+DEMO_ADMIN = ("admin", "music330")   # the demo account in .env.example
+
+
+def _same(typed, real):
+    """Compare two texts in constant time (as bytes, so any character is allowed)."""
+    return secrets.compare_digest(typed.encode(), real.encode())
+
+
 @bp.route("/login", methods=["GET", "POST"])
 def login():
+    username = current_app.config["ADMIN_USERNAME"]
     password = current_app.config["ADMIN_PASSWORD"]
     error = None
     if request.method == "POST":
-        typed = request.form.get("password", "")
-        if password and secrets.compare_digest(typed, password):
+        # Check both, always, so the answer doesn't say which one was wrong.
+        name_ok = _same(request.form.get("username", "").strip(), username)
+        password_ok = _same(request.form.get("password", ""), password)
+        if password and name_ok and password_ok:
             session["is_admin"] = True
             flash("Admin mode is on.", "success")
             return redirect(safe_next(request.args.get("next"), url_for("admin.dashboard")))
-        error = "That is not the admin password."
-    return render_template("admin/login.html", error=error, disabled=not password)
+        error = "That username or password is wrong."
+    return render_template("admin/login.html", error=error, disabled=not password,
+                           demo=(username, password) == DEMO_ADMIN)
 
 
 @bp.post("/logout")

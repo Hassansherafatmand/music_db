@@ -6,7 +6,7 @@
 #
 # The first time, it does steps 1 to 4 of the README for you:
 #   - makes the Python folder (.venv) and installs the packages
-#   - makes the settings file (.env) with new random passwords
+#   - makes the settings file (.env) with a new random database password and secret key
 #   - asks for your MySQL root password once, builds the database (scripts/build.sql)
 #     if it is not there yet (or if it is an older version), and makes the website's
 #     own MySQL user (music_app)
@@ -68,7 +68,8 @@ import secrets
 example = {
     "MYSQL_PASSWORD": ("change-me", lambda: secrets.token_hex(16)),
     "SECRET_KEY": ("paste-a-long-random-text-here", lambda: secrets.token_hex(32)),
-    "ADMIN_PASSWORD": ("choose-an-admin-password", lambda: secrets.token_urlsafe(9)),
+    # an older .env.example had a placeholder here; now it is the demo password
+    "ADMIN_PASSWORD": ("choose-an-admin-password", lambda: "music330"),
 }
 lines, filled = [], []
 with open(".env") as f:
@@ -251,9 +252,10 @@ fi
 
 say "Starting music_db: $URL"
 echo "  Log in as a practice listener: sunny_cactus40, password music330"
+ADMIN_USER=$(setting ADMIN_USERNAME admin)
 ADMIN_PW=$(setting ADMIN_PASSWORD "")
 if [ -n "$ADMIN_PW" ]; then
-    echo "  Admin page: $URL/admin (password: $ADMIN_PW, from .env)"
+    echo "  Admin page: $URL/admin (username: $ADMIN_USER, password: $ADMIN_PW, from .env)"
 fi
 echo "  To stop the website, press Ctrl+C."
 echo

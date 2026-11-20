@@ -44,7 +44,7 @@ newer**. Run every command from this folder.
 
 The first time, it asks for your MySQL root password once. Then it builds the database (if
 it isn't there yet, or if it is an older version), makes the `music_app` user and a `.env`
-file with new random passwords, starts the website and opens it in your browser. After
+file with a new random database password, starts the website and opens it in your browser. After
 that, `./run.sh` only starts the website. `./run.sh --fresh` builds the database again from
 zero.
 
@@ -76,9 +76,9 @@ source .venv/bin/activate        # on Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-**4. Write your settings.** Copy the example file, then open `.env` and fill it in: the
-password from step 2, a secret key, and an admin password. `.env` is never uploaded to
-GitHub.
+**4. Write your settings.** Copy the example file, then open `.env` and fill in the
+password from step 2 and a secret key. The demo admin account (`admin` / `music330`) is
+already in it. `.env` is never uploaded to GitHub.
 
 ```sh
 cp .env.example .env
@@ -93,9 +93,15 @@ flask --app web run --port 5050
 
 (Port 5050, because macOS already uses port 5000 for AirPlay.)
 
-**Try it:** log in as any practice listener, for example `sunny_cactus40`, with the
-password `music330`. The admin page is at http://127.0.0.1:5050/admin and uses the
-`ADMIN_PASSWORD` from your `.env` file.
+**Try it:** these demo accounts work on every computer.
+
+| Account | Where | Username | Password |
+|---|---|---|---|
+| A practice listener | http://127.0.0.1:5050/login | `sunny_cactus40` (or any other practice listener) | `music330` |
+| The admin | http://127.0.0.1:5050/admin | `admin` | `music330` |
+
+The admin account is `ADMIN_USERNAME` and `ADMIN_PASSWORD` in your `.env` file, so you can
+change it there.
 
 ## Screenshots
 
@@ -157,8 +163,9 @@ reviews and comments.
   "Run it on your computer".
 - **The data is made up,** and the plays end in November 2026, so "the last 30 days" means
   the 30 days before the newest play, not before today.
-- **All practice listeners have the same password** (`music330`), so a demo is easy. The
-  admin page has one shared password (`ADMIN_PASSWORD` in `.env`), not admin accounts.
+- **The demo accounts all use the password `music330`,** so a demo is easy. There is one
+  admin account, and it lives in `.env` (`ADMIN_USERNAME`, `ADMIN_PASSWORD`), not in the
+  database.
 - **It runs only on your own computer.** It uses Flask's development server, which is not
   made for the internet.
 - **`./run.sh --fresh` builds the database again from zero,** so it deletes everything

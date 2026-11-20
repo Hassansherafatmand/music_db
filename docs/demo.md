@@ -57,7 +57,8 @@ The right side shows music_db: the text is a parameter, so MySQL finds **0 rows*
 
 ## 7. CASCADE, RESTRICT and the trigger (2 minutes)
 
-1. Open the admin page (`/admin`, the password is `ADMIN_PASSWORD` in `.env`).
+1. Open the admin page (`/admin`) and log in with the demo admin account: `admin`,
+   password `music330`.
 2. **Listeners → Manage** on anyone: the page lists what `ON DELETE CASCADE` will delete
    (favorites, playlists, plays, reviews, and the comments under those reviews). Press
    **Delete**.
