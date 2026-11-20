@@ -33,7 +33,8 @@ There is no real sound. Pressing ▶ saves one row in the `play` table.
 
 ## Run it on your computer
 
-You need **MySQL 8 or 9** and **Python 3.10 or newer**. Run every command from this folder.
+You need **MySQL 8 or 9** (8.0.31 or newer; tested on 8.4 and 9.7) and **Python 3.10 or
+newer**. Run every command from this folder.
 
 **The quick way (Mac or Linux):** one command does steps 1 to 5 below for you:
 
@@ -138,6 +139,30 @@ column, comments under reviews (`review_comment`), an audit log with triggers
 (`data/content/`) adds more made-up data, so the website looks like a real one: every
 album has at least 3 songs, there are 120 listeners with different tastes, and hundreds of
 reviews and comments.
+
+## Built with
+
+| Part | Tools |
+|---|---|
+| The database | MySQL 9 (also tested on MySQL 8.4): migrations, views, triggers, indexes |
+| The website | Python 3, Flask, Jinja (HTML), CSS, a little JavaScript |
+| Talking to MySQL | mysql-connector-python, with a connection pool and parameters |
+| Testing | Python scripts that click through every page, and Playwright for screenshots |
+| AI assistant | Claude Code |
+
+## Known issues
+
+- **No real sound.** ▶ Play only saves a row in the `play` table.
+- **`run.sh` is for Mac and Linux.** On Windows, follow the step-by-step part of
+  "Run it on your computer".
+- **The data is made up,** and the plays end in November 2026, so "the last 30 days" means
+  the 30 days before the newest play, not before today.
+- **All practice listeners have the same password** (`music330`), so a demo is easy. The
+  admin page has one shared password (`ADMIN_PASSWORD` in `.env`), not admin accounts.
+- **It runs only on your own computer.** It uses Flask's development server, which is not
+  made for the internet.
+- **`./run.sh --fresh` builds the database again from zero,** so it deletes everything
+  that was added on the website (new listeners, favorites, playlists, reviews).
 
 ## Files
 
